@@ -1,13 +1,10 @@
-import { Body, Controller, Delete, Get, Headers, Param, Post, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
-import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { TrackService } from './track.service';
-import { AuthGuard } from "@nestjs/passport"
 import { RolesGuard } from 'src/auth/access.guard';
 import { Roles } from 'src/roles/roles.decorator';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { text } from 'stream/consumers';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { ValidationPipe } from './validation.pipe';
 import { UpdateTrackDto } from './dto/update-track.dto';
 
 @Roles("USER")

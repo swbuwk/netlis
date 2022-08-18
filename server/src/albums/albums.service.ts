@@ -6,9 +6,7 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { FilesService } from 'src/files/files.service';
 import { Track } from 'src/track/models/track.model';
 import { AlbumTrack } from './album-track.model';
-import { where } from 'sequelize/types';
 import { User } from 'src/users/users.model';
-import { Comment } from 'src/track/models/comment.model';
 
 @Injectable()
 export class AlbumsService {
@@ -37,7 +35,7 @@ export class AlbumsService {
     async updateAlbumInfo(albumId, dto: CreateAlbumDto, userId) {
         const album = await this.getOneAlbum(albumId)
         if (album.authorId !== userId) {
-            throw new HttpException("Нельзя редактировать чужой альбом", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot edit this album", HttpStatus.BAD_REQUEST)
         }
         if (dto.name) album.name = dto.name
         if (dto.description) album.description = dto.description
@@ -48,12 +46,12 @@ export class AlbumsService {
     async uploadAlbumPhoto(albumId, image: Express.Multer.File, userId) {
         const album = await this.getOneAlbum(albumId)
         if (album.authorId !== userId) {
-            throw new HttpException("Нельзя редактировать чужой альбом", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot edit this album", HttpStatus.BAD_REQUEST)
         }
 
         let photo
         if (!image) {
-            throw new HttpException("Ошибка при загрузке фото", HttpStatus.BAD_REQUEST)
+            throw new HttpException("Error while uploading photo", HttpStatus.BAD_REQUEST)
         }
         photo = await this.filesService.uploadImage(image)
 
@@ -94,7 +92,7 @@ export class AlbumsService {
     async deleteAlbum(albumId, userId) {
         const album = await this.getOneAlbum(albumId)
         if (album.authorId !== userId) {
-            throw new HttpException("Нельзя удалять чужой альбом", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot delete this album", HttpStatus.BAD_REQUEST)
         }
         const deleted = await this.albumsRepository.destroy({where: {id: albumId}})
         return {deleted}
@@ -104,7 +102,7 @@ export class AlbumsService {
     async addTrackToAlbum(albumId, trackId, userId) {
         const album = await this.getOneAlbum(albumId)
         if (album.authorId !== userId) {
-            throw new HttpException("Нельзя редактировать чужой альбом", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot add a track to this album", HttpStatus.BAD_REQUEST)
         }
         await this.albumTracksReposiroty.create({
             albumId,
@@ -121,7 +119,7 @@ export class AlbumsService {
     async deleteTrackFromAlbum(albumId, trackId, userId) {
         const album = await this.getOneAlbum(albumId)
         if (album.authorId !== userId) {
-            throw new HttpException("Нельзя редактировать чужой альбом", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot delete a track from this album", HttpStatus.BAD_REQUEST)
         }
         const deleted = await this.albumTracksReposiroty.destroy({where: {albumId, trackId}})
         return {deleted}

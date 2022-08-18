@@ -1,9 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesGuard } from 'src/auth/access.guard';
-import { Role } from 'src/roles/roles.model';
-import { RolesService } from 'src/roles/roles.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -26,10 +24,10 @@ export class UsersController {
     @UseGuards(RolesGuard)
     @Post("/photo")
     @UseInterceptors(FileInterceptor("photo"))
-    uploadUserPhoto(@Query("user_id") userId,
+    uploadUserPhoto(
             @Req() req,
             @UploadedFile() photo: Express.Multer.File) {
-        return this.usersService.uploadUserPhoto(photo, userId, req.user.id)
+        return this.usersService.uploadUserPhoto(photo, req.user.id)
     }
 
     @Roles("USER", "ADMIN")

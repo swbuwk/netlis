@@ -1,11 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Type } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { FilesService } from 'src/files/files.service';
 import { RolesService } from 'src/roles/roles.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './users.model';
 import * as uuid from "uuid"
-import { Role } from 'src/roles/roles.model';
 import { UserRole } from 'src/roles/user-roles.model';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -29,10 +28,7 @@ export class UsersService {
         return userWithRole
     }
 
-    async uploadUserPhoto(image, userId, requestedUserId) {
-        if (userId !== requestedUserId) {
-            throw new HttpException("Вы не можете редактировать другого пользователя", HttpStatus.BAD_REQUEST)
-        }
+    async uploadUserPhoto(image, userId) {
         const photo = await this.filesService.uploadImage(image)
         const user = await this.userRepository.findByPk(userId)
         user.photo = photo
@@ -81,7 +77,7 @@ export class UsersService {
 
     async deleteUser(userId, requestedUser) {
         if (userId !== requestedUser.id || !requestedUser.roles.some(role => role.name === "ADMIN")) {
-            throw new HttpException("Вы не можете удалять другого пользователя", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot delete this user", HttpStatus.BAD_REQUEST)
         }
         const deleted = await this.userRepository.destroy({where: {id: userId}})
         return {deleted}

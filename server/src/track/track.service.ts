@@ -23,10 +23,10 @@ export class TrackService {
     async createTrack(dto: CreateTrackDto, files, userId: string): Promise<Track> {        
         const album = await this.albumsRepository.findByPk(dto.originalAlbumId)
         if (album.authorId !== userId) {
-            throw new HttpException("Вы не можете редактировать чужой альбом", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot add a track to this album", HttpStatus.BAD_REQUEST)
         }
         if (!files?.audio) {
-            throw new HttpException("Ошибка при загрузке аудио", HttpStatus.BAD_REQUEST)
+            throw new HttpException("Error while uploading photo", HttpStatus.BAD_REQUEST)
         }
         const audio = await this.filesService.uploadAudio(files.audio[0], dto.name)
 
@@ -49,11 +49,11 @@ export class TrackService {
 
     async uploadTrackPhoto(trackId, image, userId) {
         if (!image) {
-            throw new HttpException("Ошибка при загрузке фото", HttpStatus.BAD_REQUEST)
+            throw new HttpException("Error while uploading photo", HttpStatus.BAD_REQUEST)
         }
         const track = await this.getOneTrack(trackId)
         if (track.uploaderId !== userId) {
-            throw new HttpException("Вы не можете редактировать чужой трек", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot edit this track", HttpStatus.BAD_REQUEST)
         }
         const photo = await this.filesService.uploadImage(image)
         track.photo = photo
@@ -64,7 +64,7 @@ export class TrackService {
     async updateTrackInfo(trackId, dto: UpdateTrackDto, userId) {
         const track = await this.getOneTrack(trackId)
         if (track.uploaderId !== userId) {
-            throw new HttpException("Вы не можете редактировать чужой трек", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot edit this track", HttpStatus.BAD_REQUEST)
         }
         track.name = dto.name
         track.text = dto.text
@@ -120,7 +120,7 @@ export class TrackService {
     async deleteTrack(id: string, userId: string) {
         const track = await this.getOneTrack(id)
         if (track.uploaderId !== userId) {
-            throw new HttpException("Вы не можете удалить чужой трек", HttpStatus.BAD_REQUEST)
+            throw new HttpException("You cannot delete this track", HttpStatus.BAD_REQUEST)
         }
         let deleted: number = await this.trackRepositoy.destroy({where: {id}})
         return {deleted}

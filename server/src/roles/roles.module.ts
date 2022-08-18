@@ -5,7 +5,6 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Role } from './roles.model';
 import { User } from 'src/users/users.model';
 import { UserRole } from './user-roles.model';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({

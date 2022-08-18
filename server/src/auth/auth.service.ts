@@ -1,12 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { User } from 'src/users/users.model';
 import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from "bcrypt"
 import { JwtService } from '@nestjs/jwt';
-import { Role } from 'src/roles/roles.model';
 
 @Injectable()
 export class AuthService {
@@ -16,11 +14,11 @@ export class AuthService {
     async login(dto: LoginDto) {
         const user = await this.usersService.getUserByEmail(dto.email)
         if (!user) {
-            throw new HttpException("Пользователя с таким email не существует", HttpStatus.BAD_REQUEST)
+            throw new HttpException("User with this Email doesn't exist", HttpStatus.BAD_REQUEST)
         }
         const isPasswordsEqual = await bcrypt.compare(dto.password, user.password)
         if (!isPasswordsEqual) {
-            throw new HttpException("Неверный пароль", HttpStatus.UNAUTHORIZED)
+            throw new HttpException("Wrong password", HttpStatus.UNAUTHORIZED)
         }
         return this.generateTokens(user)
         
@@ -29,7 +27,7 @@ export class AuthService {
     async registration(dto: CreateUserDto) {
         const candidate = await this.usersService.getUserByEmail(dto.email)
         if (candidate) {
-            throw new HttpException("Пользователь с таким email уже существует", HttpStatus.BAD_REQUEST)
+            throw new HttpException("User with this Email doesn't exist", HttpStatus.BAD_REQUEST)
         }
         const hashPassword = await bcrypt.hash(dto.password, 5)
         const user = await this.usersService.createUser({...dto, password: hashPassword}, null)
@@ -46,11 +44,11 @@ export class AuthService {
     async refresh(token: string) {
         try {
             const user = this.jwtService.verify(token)
-            const candidate = this.usersService.getUserById(user.id)
-            if (!candidate) throw new HttpException("Пользователя не существует", HttpStatus.BAD_REQUEST)
+            const isUserExist = this.usersService.getUserById(user.id)
+            if (!isUserExist) throw new HttpException("User with this ID doesn't exist", HttpStatus.BAD_REQUEST)
             return this.generateTokens(user)
         } catch (error) {
-            throw new HttpException("Невалидный токен", HttpStatus.BAD_REQUEST)
+            throw new HttpException("Invalid token", HttpStatus.BAD_REQUEST)
         }
     }
 

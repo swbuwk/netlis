@@ -9,14 +9,13 @@ import { RolesModule } from './roles/roles.module';
 import { Role } from './roles/roles.model';
 import { UserRole } from './roles/user-roles.model';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import path, { join } from 'path';
+import { join } from 'path';
 import { Track } from './track/models/track.model';
 import { Comment } from './track/models/comment.model';
 import { AlbumsModule } from './albums/albums.module';
 import { Album } from './albums/albums.model';
 import { AlbumTrack } from './albums/album-track.model';
 import { ConfigModule } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 
 
 @Module({
