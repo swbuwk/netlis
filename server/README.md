@@ -1,5 +1,4 @@
 ## THINGS TO DO
-- translate all russian stuff to english
 - cover server modules in tests
 - re-test all server functionality and make sure all is working fine
 - start building frontend side
