@@ -21,13 +21,20 @@ export class AlbumsController {
     }
 
     @Get()
-    getAllAlbums() {
-        return this.albumsService.getAllAlbums()
+    getAllAlbums(
+        @Req() req,
+        @Query("user_id") userId 
+    ) {
+        if (userId) {
+            return this.albumsService.getUserAlbums(userId, req.user.id)
+        }
+        return this.albumsService.getAllAlbums(req.user.id)
     }
 
     @Get("/:id")
-    getOneAlbum(@Param("id") id) {
-        return this.albumsService.getOneAlbum(id)
+    getOneAlbum(@Param("id") albumId,
+                @Req() req) {
+        return this.albumsService.getOneAlbumWithPrivateControl(albumId, req.user.id)
     }
 
     @Post("/update")
@@ -55,16 +62,20 @@ export class AlbumsController {
 
     @Post("/tracks")
     addTrackToAlbum(
+        @Query("album_id") albumId,
+        @Query("track_id") trackId,
         @Req() req,
-        @Query() qs) {
-        return this.albumsService.addTrackToAlbum(qs.album_id, qs.track_id, req.user.id)
+        ) {
+        return this.albumsService.addTrackToAlbum(albumId, trackId, req.user.id)
     }
 
     @Delete("/tracks")
     deleteTrackFromAlbum(
         @Req() req,
-        @Query() qs) {
-        return this.albumsService.deleteTrackFromAlbum(qs.album_id, qs.track_id, req.user.id)
+        @Query("album_id") albumId,
+        @Query("track_id") trackId,
+        ) {
+        return this.albumsService.deleteTrackFromAlbum(albumId, trackId, req.user.id)
     }
 
     @Get("/tracks")

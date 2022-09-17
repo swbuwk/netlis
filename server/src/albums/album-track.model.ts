@@ -1,5 +1,5 @@
 import { Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
-import { Track } from "src/track/models/track.model";
+import { Track } from "../track/models/track.model";
 import { Album } from "./albums.model";
 
 interface AlbumTrackCreationAttrs {
