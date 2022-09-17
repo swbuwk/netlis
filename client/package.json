@@ -1,0 +1,36 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@chakra-ui/icons": "^2.0.9",
+    "@chakra-ui/react": "^2.2.8",
+    "@chakra-ui/theme-tools": "^2.0.2",
+    "@emotion/react": "^11.10.0",
+    "@emotion/styled": "^11.10.0",
+    "@react-icons/all-files": "^4.1.0",
+    "@reduxjs/toolkit": "^1.8.5",
+    "@types/react-redux": "^7.1.24",
+    "@types/yup": "^0.32.0",
+    "axios": "^0.27.2",
+    "cookie-cutter": "^0.2.0",
+    "formik": "^2.2.9",
+    "framer-motion": "^6.5.1",
+    "next": "latest",
+    "next-redux-wrapper": "^7.0.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0",
+    "react-redux": "^8.0.2",
+    "yup": "^0.32.11"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^4.7.2"
+  }
+}
