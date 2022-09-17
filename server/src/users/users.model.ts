@@ -1,8 +1,8 @@
-import { BelongsToMany, Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
-import { Album } from "src/albums/albums.model";
-import { Role } from "src/roles/roles.model";
-import { UserRole } from "src/roles/user-roles.model";
-import { Track } from "src/track/models/track.model";
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, HasOne, Model, Table } from "sequelize-typescript";
+import { Album } from "../albums/albums.model";
+import { Role } from "../roles/roles.model";
+import { UserRole } from "../roles/user-roles.model";
+import { Track } from "../track/models/track.model";
 
 interface UserCreationAttrs {
     id: string
@@ -10,6 +10,7 @@ interface UserCreationAttrs {
     email: string,
     password: string,
     photo: string,
+    mainAlbum: Album
 }
 
 @Table({tableName: "users"})
@@ -41,6 +42,9 @@ export class User extends Model<User, UserCreationAttrs> {
   @HasMany(() => Track)
   tracks: Track[]
 
-  @HasMany(() => Album)
+  @HasOne(() => Album, {as: "mainAlbum"})
+  mainAlbum: Album
+  
+  @HasMany(() => Album, {as: "albums"})
   albums: Album[]
 }

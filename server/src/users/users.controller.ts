@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Roles } from 'src/roles/roles.decorator';
-import { RolesGuard } from 'src/auth/access.guard';
+import { Roles } from '../roles/roles.decorator';
+import { RolesGuard } from '../auth/access.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -41,22 +41,24 @@ export class UsersController {
 
     @Post("/roles")
     addUserRole(
-            @Query() qs) {
-        return this.usersService.addUserRole(qs.user_id, qs.role)
+            @Query("user_id") userId,
+            @Query("role") role) {
+        return this.usersService.addUserRole(userId, role)
     }
 
     @Delete("/roles")
     deleteUserRole(
-            @Query() qs) {
-        return this.usersService.deleteUserRole(qs.user_id, qs.role)
+        @Query("user_id") userId,
+        @Query("role") role) {
+        return this.usersService.deleteUserRole(userId, role)
     }
 
     @Roles("USER", "ADMIN")
     @UseGuards(RolesGuard)
     @Get()
     getUsers(@Query() query) {
-        if (query.id) {
-            return this.usersService.getUserById(query.id)
+        if (query.user_id) {
+            return this.usersService.getUserById(query.user_id)
         }
         if (query.email) {
             return this.usersService.getUserByEmail(query.email)
@@ -68,8 +70,7 @@ export class UsersController {
     @UseGuards(RolesGuard)
     @Get("/me")
     getMe(@Req() req) {
-        const {iat, exp, ...user} = req.user
-      return user
+        return this.usersService.getUserById(req.user.id)
     }
 
     @Roles("USER", "ADMIN")

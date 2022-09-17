@@ -1,14 +1,15 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
-import { FilesModule } from 'src/files/files.module';
+import { FilesModule } from '../files/files.module';
 import { User } from './users.model';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { RolesModule } from 'src/roles/roles.module';
-import { Role } from 'src/roles/roles.model';
-import { UserRole } from 'src/roles/user-roles.model';
-import { AuthModule } from 'src/auth/auth.module';
-import { Track } from 'src/track/models/track.model';
+import { RolesModule } from '../roles/roles.module';
+import { Role } from '../roles/roles.model';
+import { UserRole } from '../roles/user-roles.model';
+import { AuthModule } from '../auth/auth.module';
+import { Track } from '../track/models/track.model';
+import { AlbumsModule } from 'src/albums/albums.module';
 
 @Module({
   providers: [UsersService],
@@ -17,7 +18,8 @@ import { Track } from 'src/track/models/track.model';
     SequelizeModule.forFeature([User, Role, UserRole, Track]),
     FilesModule,
     forwardRef(() => AuthModule),
-    RolesModule
+    RolesModule,
+    forwardRef(() => AlbumsModule)
   ],
   exports: [
     UsersService
