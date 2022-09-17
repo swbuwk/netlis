@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { createWrapper } from 'next-redux-wrapper'
+import PlaylistSlice from './PlaylistSlice/PlaylistSlice'
 import UserSlice from './UserSlice/UserSlice'
 
 const makeStore = () => configureStore({
   reducer: {
+    playlist: PlaylistSlice,
     user: UserSlice
   }
 })
