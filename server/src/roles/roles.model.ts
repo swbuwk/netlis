@@ -1,5 +1,5 @@
 import { BelongsToMany, Column, DataType, Model, Table } from "sequelize-typescript";
-import { User } from "src/users/users.model";
+import { User } from "../users/users.model";
 import { UserRole } from "./user-roles.model";
 
 interface RoleCreationAttrs {
@@ -7,7 +7,7 @@ interface RoleCreationAttrs {
     description: string,
 }
 
-@Table({tableName: "roles"})
+@Table({tableName: "roles", createdAt: false, updatedAt: false})
 export class Role extends Model<Role, RoleCreationAttrs> {
   @Column({type: DataType.INTEGER, unique: true, primaryKey: true, autoIncrement: true})
   id: number;
