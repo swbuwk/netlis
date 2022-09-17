@@ -10,6 +10,9 @@ import { Album } from 'src/albums/albums.model';
 import { User } from 'src/users/users.model';
 import { AlbumTrack } from 'src/albums/album-track.model';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { ServerException } from 'src/utils/exception';
+import { where } from 'sequelize/types';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class TrackService {
@@ -20,31 +23,45 @@ export class TrackService {
                 @InjectModel(Album) private albumsRepository: typeof Album,
                 private filesService: FilesService) {}
 
-    async createTrack(dto: CreateTrackDto, files, userId: string): Promise<Track> {        
+    async createTrack(dto: CreateTrackDto, files, user): Promise<Track> {        
         const album = await this.albumsRepository.findByPk(dto.originalAlbumId)
-        if (album.authorId !== userId) {
-            throw new HttpException("You cannot add a track to this album", HttpStatus.BAD_REQUEST)
+        if (album.authorId !== user.id) {
+            throw new ServerException({
+                ok: false,
+                message: "You cannot add a track to this album",
+                status: HttpStatus.BAD_REQUEST,
+                type: "album"
+            })
         }
+
         if (!files?.audio) {
-            throw new HttpException("Error while uploading photo", HttpStatus.BAD_REQUEST)
+            throw new ServerException({
+                ok: false,
+                message: "Error while uploading audio",
+                status: HttpStatus.BAD_REQUEST,
+                type: "audio"
+            })
         }
-        const audio = await this.filesService.uploadAudio(files.audio[0], dto.name)
+        const audio = await this.filesService.uploadAudio(files.audio[0])
 
         let photo
         if (files.photo) {
             photo = await this.filesService.uploadImage(files.photo[0])
         }
 
+        const verified = user.roles.some(role => role.name = "ARTIST")
+
         const id = uuid.v4()
-        const track = await this.trackRepositoy.create({
+        await this.trackRepositoy.create({
             id,
             ...dto,
             audio,
             photo,
-            uploaderId: userId,
+            uploaderId: user.id,
+            verified,
         }, {include: {all: true}})
         await this.albumTrackRepository.create({albumId: dto.originalAlbumId, trackId: id})
-        return track
+        return await this.getOneTrack(id)
     }
 
     async uploadTrackPhoto(trackId, image, userId) {
@@ -86,20 +103,32 @@ export class TrackService {
         return comments
     }
 
-    async getAllTracks() {
-        const track = await this.trackRepositoy.findAll({include: {all: true}})
-        return track
+    async getAllTracks(userId) {
+        const tracks = await this.trackRepositoy.findAll({include: [
+            {
+                model: Album,
+                where: {
+                    [Op.or]: {
+                        private: false,
+                        [Op.and]: {
+                            private: true,
+                            authorId: userId
+                        }
+                    }
+                },
+            },
+            {
+                model: User,
+                attributes: {exclude: ["password", "email"]},
+            }
+        ]})
+        return tracks
     }
 
 
 
     async getOneTrack(id: string) {
         let track = await this.trackRepositoy.findByPk(id, {include: [
-            {
-                model: Album,
-                as: "originalAlbum",
-                attributes: {exclude: ["authorId"]}
-            },
             {
                 model: Album,
                 as: "albums",

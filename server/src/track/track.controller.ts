@@ -11,7 +11,7 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 @UseGuards(RolesGuard)
 @Controller('tracks')
 export class TrackController {
-  constructor(private readonly trackService: TrackService) {}
+  constructor(private trackService: TrackService) {}
 
   @Post("/upload")
   @UseInterceptors(FileFieldsInterceptor([
@@ -22,7 +22,7 @@ export class TrackController {
         @Req() req,
         @UploadedFiles() files: {photo: Express.Multer.File[],
                                 audio: Express.Multer.File[]}) {
-    return this.trackService.createTrack(dto, files, req.user.id)
+    return this.trackService.createTrack(dto, files, req.user)
   }
 
   @Post("/upload/photo")
@@ -32,7 +32,7 @@ export class TrackController {
         @Req() req,
         @UploadedFile() photo: Express.Multer.File[],
         ) {
-    return this.trackService.uploadTrackPhoto(trackId, photo, req.user.id)
+    return this.trackService.uploadTrackPhoto(trackId, photo, req.user)
   }
 
   @Post("/update")
@@ -58,8 +58,10 @@ export class TrackController {
   }
 
   @Get()
-  getAllTracks() {
-    return this.trackService.getAllTracks()
+  getAllTracks(
+    @Req() req
+  ) {
+    return this.trackService.getAllTracks(req.user.id)
   }
 
   @Get("/:id")

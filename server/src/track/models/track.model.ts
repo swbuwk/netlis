@@ -1,7 +1,7 @@
 import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript"
-import { AlbumTrack } from "src/albums/album-track.model";
-import { Album } from "src/albums/albums.model";
-import { User } from "src/users/users.model"
+import { AlbumTrack } from "../../albums/album-track.model";
+import { Album } from "../../albums/albums.model";
+import { User } from "../../users/users.model"
 import { Comment } from "./comment.model";
 
 interface TrackCreationAttrs {
@@ -12,7 +12,8 @@ interface TrackCreationAttrs {
     text: string,
     photo: string,
     audio: string,
-    verified: boolean
+    verified: boolean,
+    duration: string
 }
 
 
@@ -36,7 +37,10 @@ export class Track extends Model<Track, TrackCreationAttrs> {
   @Column({type: DataType.STRING})
   audio: string
 
-  @Column({type: DataType.BOOLEAN, defaultValue: true})
+  @Column({type: DataType.STRING})
+  duration: string
+
+  @Column({type: DataType.BOOLEAN, defaultValue: false})
   verified: boolean
 
   @ForeignKey(() => User)
@@ -49,9 +53,6 @@ export class Track extends Model<Track, TrackCreationAttrs> {
   @ForeignKey(() => Album)
   @Column({type: DataType.STRING, allowNull: false})
   originalAlbumId: string
-
-  @BelongsTo(() => Album)
-  originalAlbum: Album
 
   @BelongsToMany(() => Album, () => AlbumTrack)
   albums: Album[]

@@ -1,5 +1,5 @@
 import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
-import { User } from "src/users/users.model";
+import { User } from "../../users/users.model";
 import { Track } from "./track.model";
 
 interface CommentCreationAttrs {
