@@ -17,7 +17,6 @@ import { Album } from './albums/albums.model';
 import { AlbumTrack } from './albums/album-track.model';
 import { ConfigModule } from '@nestjs/config';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -45,6 +44,5 @@ import { ConfigModule } from '@nestjs/config';
     AlbumsModule
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}
