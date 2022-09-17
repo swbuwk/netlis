@@ -12,8 +12,8 @@ export class FilesService {
         return imgName
     }
 
-    async uploadAudio(file, name) {
-        const audioName = `${name}-${uuid.v4()}.mp3`
+    async uploadAudio(file) {
+        const audioName = uuid.v4() + "mp3"
         const audioPath = path.resolve(__dirname, "..", "static")
         await this.uploadFile(audioPath, audioName, file.buffer)
         return audioName
