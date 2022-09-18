@@ -1,5 +1,5 @@
 import { Box, BoxProps, Flex, Icon } from '@chakra-ui/react'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { removeTrack } from '../storage/PlaylistSlice/PlaylistSlice'
 import { Track } from '../models/Track'
@@ -25,6 +25,12 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
     const router = useRouter()
     const user = useAppSelector(state => state.user)
 
+    const isInMainAlbum = (trackId) => {
+      return user.info?.mainAlbum.tracks.some(albumT => albumT.id === trackId)
+    }
+
+    const [isLiked, setIsLiked] = useState<boolean>(isInMainAlbum(track.id))
+
     const playlistTrackOptions = [
       {name:"Remove from playlist", fn: () => dispatch(removeTrack(track))},
       {name:"Go to original album", fn: () => router.push(`albums/${track.originalAlbumId}`)},
@@ -36,9 +42,6 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
       {name: "Remove track from playlist", fn: () => {}},
     ]
 
-    const isInMainAlbum = (trackId) => {
-      return user.info?.mainAlbum.tracks.some(albumT => albumT.id === trackId)
-    }
 
     const toggleTrackLike = async () => {
       if (!isInMainAlbum(track.id)) {
@@ -46,7 +49,10 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
       } else {
         await AlbumService.removeTrack(track.id, user.info.mainAlbum.id)
       }
-      dispatch(updateUser())
+      if (albumId !== user.info.mainAlbum.id) {
+        dispatch(updateUser())
+      }
+      setIsLiked(prev => !prev)
     }
 
   return (
@@ -60,9 +66,9 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
         {...props}>
             <Flex alignItems="center">
               <TrackPhoto track={track} headphones handlePlay={handlePlay}/>
-              <Icon w="35px" h="35px" as={FaHeart} ml="15px"
+              <Icon w="30px" h="30px" as={FaHeart} ml="15px"
                 transitionDuration="0.25s"
-                color={isInMainAlbum(track.id) ? "orange" : ""}
+                color={isLiked ? "orange" : ""}
                 onClick={toggleTrackLike}
               />
             </Flex>
