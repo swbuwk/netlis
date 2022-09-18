@@ -12,12 +12,14 @@ const UserOptions: FC = () => {
   const dispatch = useAppDispatch()
   const user = useAppSelector(state => state.user)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const router = useRouter()
   const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
 
 
   const deleteCurrentUser = async () => {
     await UserService.delete(user.info.id)
     dispatch(signOut())
+    router.push("/authorization")
   } 
 
 

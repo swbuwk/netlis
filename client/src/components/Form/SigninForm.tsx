@@ -8,17 +8,19 @@ import cookieCutter from 'cookie-cutter'
 import { useAppDispatch } from '../../hooks/redux';
 import { updateUser } from '../../storage/Actions/updateUser';
 import { ServerException } from '../../models/ServerException';
+import { useRouter } from 'next/router';
 
 
 const SigninForm = () => {
   const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const login = async (req, setErrors) => {
     await axios.post("http://localhost:5000/auth/login", {...req})
     .then(res => {
       localStorage.setItem("access_token", res.data.access_token)
       cookieCutter.set("refresh_token", res.data.refresh_token)
-      dispatch(updateUser())
+      dispatch(updateUser()).then(() => router.push("/home"))
     })
     .catch((err: AxiosError<ServerException>) => {
       setErrors({

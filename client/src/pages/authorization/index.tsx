@@ -6,8 +6,6 @@ import { isValidMotionProp, motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 import SigninForm from '../../components/Form/SigninForm'
 import SignupForm from '../../components/Form/SignupForm'
-import { useRouter } from 'next/router'
-import { useAppSelector } from '../../hooks/redux'
 
 const ChakraBox = chakra(motion.div, {
   shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
@@ -15,8 +13,6 @@ const ChakraBox = chakra(motion.div, {
 
 const index = () => {
   const [animationKeyframes, setAnimationKeyframes] = useState("initial")
-  const user = useAppSelector(state => state.user)
-  const router = useRouter()
 
   const sliderVariants = {
     initial: {x: "100%", transition: { duration: 0 }},
@@ -38,16 +34,6 @@ const index = () => {
 
   const toggleSlide = () => {
     setAnimationKeyframes(animationKeyframes === "signup" ? "signin" : "signup")
-  }
-
-  useEffect(() => {
-    if (!user.loading && user.signedIn) {
-      router.push("/home")
-    }
-  }, [user])
-
-  if (user.loading) {
-    return <Center h="100vh" w="100vw">loading</Center>
   }
 
   return (

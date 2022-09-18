@@ -43,7 +43,7 @@ export const counterSlice = createSlice({
     builder.addCase(updateUser.rejected, (state) => {
       state.info = initialState.info
       state.signedIn = initialState.signedIn
-      state.loading = false
+      state.loading = initialState.loading
     })
   },
 })

@@ -7,7 +7,7 @@ const index = () => {
   const playlist = useAppSelector(state => state.playlist)
 
   return (
-    <Flex w="100%" h="100%" alignItems="center" flexDir="column">
+    <Flex w="100%" h="100%" alignItems="center" justifyContent="center" flexDir="column">
         {playlist.tracks.length === 0
           ?
           <Heading size="md">There is no tracks in current playlist</Heading>

@@ -114,7 +114,6 @@ export class UsersService {
             }
         ],
         attributes: {exclude: ['password']}})
-        console.log(user)
         return user
     }
 

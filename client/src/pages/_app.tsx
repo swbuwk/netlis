@@ -10,6 +10,8 @@ import Navbar from '../components/Navbar'
 import { setUser, signOut } from '../storage/UserSlice/UserSlice'
 import { updateUser } from '../storage/Actions/updateUser'
 import UserOptions from '../components/UserOptions'
+import { SpinnerIcon } from '@chakra-ui/icons'
+import { RouteGuard } from '../components/RouteGuard'
 
 function MyApp({ Component, pageProps: {session, ...pageProps}, router }: AppProps) {
   const playlist = useAppSelector((state) => state.playlist)
@@ -19,7 +21,7 @@ function MyApp({ Component, pageProps: {session, ...pageProps}, router }: AppPro
 
   const fetchData = async () => {
     try {
-      dispatch(updateUser())
+      await dispatch(updateUser())
 
       const tracks = JSON.parse(localStorage.getItem("tracks"))
       const options = JSON.parse(localStorage.getItem("options"))
@@ -49,37 +51,30 @@ function MyApp({ Component, pageProps: {session, ...pageProps}, router }: AppPro
     fetchData()
   }, [])
 
-  useEffect(() => {
-    if (!user.loading && !user.signedIn && router.route != "/") {
-      dispatch(clearPlaylist())
-      router.push("/authorization")
-    }
-  }, [user])
-
   return (
     <Box style={{
       height: "100vh",
       position: "relative",
       overflow: "hidden"
     }}>
-      <ChakraProvider theme={theme}>
-        <Box display="flex" flexDir="column" pos="relative" w="100vw" h="100vh">
-          <Box display="flex" w="100%" h="90%">
-            {user.signedIn && <Navbar/>}
-            <Component {...pageProps}/>
-          </Box>
-          {
-            playlist.currentTrack
-            ?
-            <TrackPlayer/>
-            :
-            <Box h="10%" w="100%" bgColor="#262f42"/>
-          }
-          </Box>
-          {
-            user.signedIn && <UserOptions/>
-          }
-      </ChakraProvider>
+        <ChakraProvider theme={theme}>
+          <Box display="flex" flexDir="column" pos="relative" w="100vw" h="100vh">
+            <Box display="flex" w="100%" h="90%">
+              {user.signedIn && <Navbar/>}
+              <RouteGuard>
+                <Component {...pageProps}/>
+              </RouteGuard>
+            </Box>
+            {
+              playlist.currentTrack
+              ?
+              <TrackPlayer/>
+              :
+              <Box h="10%" w="100%" bgColor="#262f42"/>
+            }
+            </Box>
+            {user.signedIn && <UserOptions/>}
+        </ChakraProvider>
     </Box>
   )
 }
