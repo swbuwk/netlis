@@ -11,6 +11,9 @@ interface TrackOptionsProps {
 }
 
 const TrackOptions: FC<TrackOptionsProps> = ({options}) => {
+
+    if (!options.length) return (<></>)
+
   return (
     <Menu>
         <MenuButton

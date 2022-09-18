@@ -8,8 +8,9 @@ export interface Album {
     listens: number;
     photo?: any;
     private: string;
-    author: User,
-    tracks: Track[],
+    author: User;
+    tracks: Track[];
+    isMain: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

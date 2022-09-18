@@ -18,15 +18,16 @@ interface TrackComponentProps extends BoxProps {
     handlePlay?: () => void
     fromPlaylist?: boolean
     albumId?: string
+    isMain?: boolean
 }
 
-const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist = false, albumId = "", ...props}) => {
+const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist = false, albumId = "", isMain = false, ...props}) => {
     const dispatch = useAppDispatch()
     const router = useRouter()
     const user = useAppSelector(state => state.user)
 
     const isInMainAlbum = (trackId) => {
-      return user.info?.mainAlbum.tracks.some(albumT => albumT.id === trackId)
+      return user.info.mainAlbum.tracks.some(albumT => albumT.id === trackId)
     }
 
     const [isLiked, setIsLiked] = useState<boolean>(isInMainAlbum(track.id))
@@ -36,11 +37,11 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
       {name:"Go to original album", fn: () => router.push(`albums/${track.originalAlbumId}`)},
     ]
 
-    const albumTrackOptions = [
+    const albumTrackOptions = !isMain ? [
       track.originalAlbumId === albumId ?
       {name: "Delete track", fn: () => {}} :
-      {name: "Remove track from playlist", fn: () => {}},
-    ]
+      {name: "Remove track from album", fn: () => {}},
+    ] : []
 
 
     const toggleTrackLike = async () => {

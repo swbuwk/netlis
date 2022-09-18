@@ -105,7 +105,12 @@ const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
             }
             {
                 album.tracks.length > 0 && album.tracks.map(track => (
-                <TrackComponent w="100%" h="min" key={track.id} handlePlay={() => dispatch(setTracks(album.tracks))} albumId={album.id} track={track}></TrackComponent>
+                <TrackComponent
+                    w="100%" h="min"
+                    key={track.id}
+                    handlePlay={() => dispatch(setTracks(album.tracks))}
+                    albumId={album.id} isMain={album.isMain}
+                    track={track}/>
                 ))
             }
         </VStack>
