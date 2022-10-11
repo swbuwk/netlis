@@ -1,18 +1,13 @@
-import { Box, Button, chakra, Heading, Icon, Modal, ModalContent, ModalHeader, ModalOverlay, Text, useDisclosure, VStack } from '@chakra-ui/react'
-import { isValidMotionProp, motion, Variants } from 'framer-motion';
-import React, { useEffect } from 'react'
+import { Box, Button, Heading, Icon, Modal, ModalContent, ModalHeader, ModalOverlay, Text, useDisclosure, VStack } from '@chakra-ui/react'
+import { Variants } from 'framer-motion';
+import React from 'react'
 import { FaHeadphonesAlt } from '@react-icons/all-files/fa/FaHeadphonesAlt';
 import { SearchIcon } from '@chakra-ui/icons';
 import { FaHome } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import CreateAlbumForm from './Form/CreateAlbumForm';
-import api from '../axios';
 import { useAppSelector } from '../hooks/redux';
-
-
-const ChakraBox = chakra(motion.div, {
-  shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
-});
+import { ChakraBox } from '../pages/_app';
 
 const Navbar = () => {
   const router = useRouter()
@@ -54,12 +49,12 @@ const Navbar = () => {
         <Button onClick={() => router.push("/home")} leftIcon={<FaHome/>} w="100%" mb="10px">
           Home
         </Button>
-        <Button leftIcon={<SearchIcon/>} w="100%" mb="50px">
+        <Button onClick={() => router.push("/search")} leftIcon={<SearchIcon/>} w="100%" mb="50px">
           Search
         </Button>
         <Box w="100%">
           <Box borderY="1px solid gray" w="100%">
-            <Text _hover={{bgColor: "gray.600"}} onClick={() => router.push("/albums/my")} transitionDuration="0.25s" p="10px" color="gray.400" size="md">{user.info.mainAlbum.name}</Text>
+            <Text _hover={{bgColor: "gray.600"}} onClick={() => router.push("/albums/main")} transitionDuration="0.25s" p="10px" color="gray.400" size="md">{user.info.mainAlbum.name}</Text>
             {user.info && user.info.albums.map(album => (
               album.id !== user.info.mainAlbum.id && 
               <Text _hover={{bgColor: "gray.600"}} key={album.id} onClick={() => router.push(`/albums/${album.id}`)} transitionDuration="0.25s" p="10px" color="gray.400" size="md">{album.name}</Text>

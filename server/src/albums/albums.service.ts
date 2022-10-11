@@ -112,6 +112,31 @@ export class AlbumsService {
         return albums
     }
 
+    async searchByName(search: string, requsetedUserId: string): Promise<Album[]> {
+        search = "%"+search+"%"
+        const albums = await this.albumsRepository.findAll({
+            where: {[Op.and]: {
+                name: {[Op.iLike]: search},
+                [Op.or]: {private: false, authorId: requsetedUserId}}
+            },
+            include: [
+            {
+                model: Track,
+                attributes: {exclude: [ "AlbumTrack"]},
+                include: [
+                    {
+                        model: User
+                    }
+                ]
+            },
+            {
+                model: User,
+                attributes: {exclude: ["password"]},
+            }
+        ], attributes: {exclude: ["authorId"]}})
+        return albums
+    }
+
     async getOneAlbum(albumId): Promise<Album> {
         if (!albumId) return
         const album = await this.albumsRepository.findByPk(albumId, {include: [
@@ -123,13 +148,22 @@ export class AlbumsService {
                         model: User,
                         attributes: {exclude: ["password"]}
                     }
-                ]
+                ],
             },
             {
                 model: User,
                 attributes: {exclude: ["password"]}
             }
-        ]})
+            ],
+        })
+        if (!album) {
+            throw new ServerException({
+                ok: false,
+                type: "album",
+                message: "This album doesn't exist",
+                status: HttpStatus.BAD_REQUEST
+            })
+        }
         return album
     }
 
@@ -167,11 +201,6 @@ export class AlbumsService {
             trackId
         })
         return await this.getOneAlbum(albumId)
-    }
-
-    async getAlbumTracks(albumId): Promise<Track[]> {
-        const album = await this.albumsRepository.findByPk(albumId, {include: {all: true}})
-        return album.tracks
     }
 
     async deleteTrackFromAlbum(albumId, trackId, userId) {

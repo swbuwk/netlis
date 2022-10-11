@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { clearPlaylist } from '../storage/PlaylistSlice/PlaylistSlice';
-import { updateUser } from '../storage/Actions/updateUser';
+import { useLazyGetMeQuery } from '../storage/ApiSlice/UserApi';
+import { setUser, signIn } from '../storage/UserSlice/UserSlice';
 
 export { RouteGuard };
 
@@ -10,6 +11,7 @@ function RouteGuard({ children }) {
     const router = useRouter();
     const [authorized, setAuthorized] = useState(false);
     const dispatch = useAppDispatch();
+    const [getMe] = useLazyGetMeQuery()
 
     useEffect(() => {
         authCheck(router.asPath);
@@ -30,10 +32,9 @@ function RouteGuard({ children }) {
     async function authCheck(url) {
         const publicPaths = ['/authorization', "/"];
         const path = url.split('?')[0];
-        dispatch(updateUser()).then((res) => {
-            console.log(res)
-            console.log(res.type === "users/update/fulfilled" || publicPaths.includes(path))
-            if (res.type === "users/update/fulfilled" || publicPaths.includes(path)) {
+        await getMe({}).then(res => {
+            dispatch(setUser(res.data))
+            if (res.isSuccess || publicPaths.includes(path)) {
                 setAuthorized(true);
             } else {
                 router.push('/authorization');
@@ -41,8 +42,6 @@ function RouteGuard({ children }) {
                 setAuthorized(false);
             }
         })
-        
-
     }
 
     return (authorized && children);

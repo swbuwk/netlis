@@ -12,48 +12,46 @@ import FileField, { FileFieldOptions } from './Field/FileField'
 import axios, { AxiosError } from 'axios'
 import { Track } from '../../models/Track'
 import { ServerException } from '../../models/ServerException'
+import { useUploadTrackMutation } from '../../storage/ApiSlice/TracksApi'
 
 interface AudioBlob extends Blob {
   duration: number
 }
 
 interface UploadTrackFormProps {
-  defaultAlbumId?: string
   onClose: () => void
   fetchAlbum: () => void
+  defaultAlbumOption: string
 }
 
-const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, defaultAlbumId, fetchAlbum}) => {
+const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, fetchAlbum, defaultAlbumOption}) => {
     const user = useAppSelector(state => state.user)
     const toast = useToast()
+    const [uploadTrack] = useUploadTrackMutation()
 
-    const uploadTrack = async (formData, setErrors) => {
-        await api.post<Track>("tracks/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
+    const handleTrackUpload = async (formData: FormData, setErrors) => {
+      await uploadTrack(formData)
+      .then((res: {data: Track}) => {
+        toast({
+          title: 'Track uploaded.',
+          description: `Now you can listen "${res.data.name}"!`,
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
         })
-        .then(res => {
-          toast({
-            title: 'Track uploaded.',
-            description: `Now you can listen "${res.data.name}"!`,
-            status: 'success',
-            duration: 4000,
-            isClosable: true,
-          })
-          fetchAlbum()
-          onClose()
+        fetchAlbum()
+        onClose()
+      })
+      .catch((err) => {
+        setErrors({
+          audio: err.response.data.type === "audio" ? err.response.data.message : ""
         })
-        .catch((err: AxiosError<ServerException>) => {
-          setErrors({
-            audio: err.response.data.type === "audio" ? err.response.data.message : ""
-          })
-        })
+      })
     }
 
     const UploadTrackSchema = yup.object().shape({
         name: yup.string()
-          .min(2, 'Too Short')
+          .min(3, 'Too Short')
           .max(50, 'Too Long')
           .required('Required'),
         text: yup.string()
@@ -90,7 +88,7 @@ const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, defaultAlbumId, fetc
             formData.append("audio", values.audio)
             formData.append("duration", ""+values.audio.duration)
    
-            uploadTrack(formData, actions.setErrors)            
+            await handleTrackUpload(formData, actions.setErrors)            
         }}
     >
         {({}) => (
@@ -101,7 +99,7 @@ const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, defaultAlbumId, fetc
                           <Flex w="100%">
                             <Box w="100%" mr="40px">
                               <InputField mb="10px" fieldName='name'/>
-                              <SelectField fieldName='album' label='Album' options={user.info.albums.filter(album => album.id !== user.info.mainAlbum.id)}/>
+                              <SelectField fieldName='album' label='Album' defaultOption={defaultAlbumOption} options={user.info.albums.filter(album => album.id !== user.info.mainAlbum.id)}/>
                             </Box>
                             <FileField option={FileFieldOptions.photo} fieldName='photo'/>
                           </Flex>

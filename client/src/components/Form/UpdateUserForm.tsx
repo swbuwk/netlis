@@ -5,8 +5,8 @@ import React, { FC } from 'react'
 import * as yup from 'yup';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { ServerException } from '../../models/ServerException';
-import { UserService } from '../../services/UserService';
-import { updateUser } from '../../storage/Actions/updateUser';
+import { useLazyGetMeQuery, useUpdateUserMutation, useUploadUserPhotoMutation } from '../../storage/ApiSlice/UserApi';
+import { setUser } from '../../storage/UserSlice/UserSlice';
 import FileField, { FileFieldOptions } from './Field/FileField';
 import InputField from './Field/InputField';
 import TextAreaField from './Field/TextAreaField';
@@ -19,10 +19,14 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
   const user = useAppSelector(state => state.user)
   const dispatch = useAppDispatch()
   const toast = useToast()
+  const [getMe] = useLazyGetMeQuery()
+  const [updateUser] = useUpdateUserMutation()
+  const [uploadUserPhoto] = useUploadUserPhotoMutation()
 
   const update = async (body, photo) => {
-    await UserService.updateAll(body, photo)
-    .then(res => {
+    await updateUser(body)
+    .then(() => uploadUserPhoto(photo))
+    .then(() => {
       toast({
         title: 'User succesfully updated.',
         status: 'success',
@@ -38,7 +42,7 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
         isClosable: true,
       })
     })
-    dispatch(updateUser())
+    await getMe({}).then(res => dispatch(setUser(res.data)))
 
     onClose()
   }
@@ -69,7 +73,9 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
         return
       }
       const {photo, ...body} = values
-      await update(body, photo)
+      const formData = new FormData()
+      formData.append("photo", photo)
+      await update(body, formData)
     }
   }
   >
@@ -87,7 +93,7 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
                 <TextAreaField fieldName='bio' defaultVal={user.info.bio}/>
             </VStack>
             <Flex justifyContent="flex-end" mt="10px">
-                  <Button px="30px" type="submit">Upload</Button>
+                  <Button px="30px" type="submit">Update</Button>
                   <Button px="30px" ml="15px" onClick={onClose}>Cancel</Button>
             </Flex>
         </Form>

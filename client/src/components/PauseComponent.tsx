@@ -1,19 +1,15 @@
-import { chakra, Icon } from '@chakra-ui/react';
-import { isValidMotionProp, motion } from 'framer-motion';
+import { Box, Icon } from '@chakra-ui/react';
 import React, { FC } from 'react'
 import { AiFillPauseCircle, AiFillPlayCircle } from 'react-icons/ai';
 
 interface PauseComponentProps {
     paused: boolean
+    pauseVisible: boolean
 }
 
-const ChakraBox = chakra(motion.div, {
-    shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
-  });
-
-const PauseComponent:FC<PauseComponentProps> = ({paused}) => {
+const PauseComponent:FC<PauseComponentProps> = ({paused, pauseVisible}) => {
   return (
-    <ChakraBox
+    <Box
         pos="absolute"
         w="100%" h="100%"
         borderRadius="5px"
@@ -22,14 +18,12 @@ const PauseComponent:FC<PauseComponentProps> = ({paused}) => {
         zIndex={5}
         justifyContent="center"
         alignItems="center"
-        initial={{opacity: 0}}
-        whileHover={{opacity: 1}}
-        //@ts-ignore
-        transition={{duration: 0.2}}
+        opacity={pauseVisible ? 1 : 0}
+        transitionDuration="0.2s"
         >
         <Icon pos="absolute" w="70%" h="70%" as={
             !paused ? AiFillPauseCircle : AiFillPlayCircle}/>
-    </ChakraBox>
+    </Box>
   )
 }
 

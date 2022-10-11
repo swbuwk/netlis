@@ -3,7 +3,8 @@ import { useRouter } from 'next/router'
 import React, { FC } from 'react'
 import { staticFile } from '../axios'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { UserService } from '../services/UserService'
+import { useDeleteUserMutation } from '../storage/ApiSlice/UserApi'
+import { clearPlaylist } from '../storage/PlaylistSlice/PlaylistSlice'
 import { signOut } from '../storage/UserSlice/UserSlice'
 import ConfirmModal from './ConfirmModal'
 import UpdateUserForm from './Form/UpdateUserForm'
@@ -15,12 +16,20 @@ const UserOptions: FC = () => {
   const router = useRouter()
   const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
 
+  const [deleteUser] = useDeleteUserMutation()
 
   const deleteCurrentUser = async () => {
-    await UserService.delete(user.info.id)
+    await router.push("/authorization")
+    await deleteUser(user.info.id)
     dispatch(signOut())
-    router.push("/authorization")
+    dispatch(clearPlaylist())
   } 
+
+  const logout = async () => {
+    await router.push("/authorization")
+    dispatch(signOut())
+    dispatch(clearPlaylist())
+  }
 
 
   return (
@@ -41,7 +50,7 @@ const UserOptions: FC = () => {
                   <MenuItem onClick={onOpen}>
                       Edit
                   </MenuItem>
-                  <MenuItem onClick={() => dispatch(signOut())}>
+                  <MenuItem onClick={logout}>
                       Logout
                   </MenuItem>
                   <MenuItem color={"red.400"} onClick={onDeleteOpen}>

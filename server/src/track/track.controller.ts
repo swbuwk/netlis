@@ -59,14 +59,20 @@ export class TrackController {
 
   @Get()
   getAllTracks(
-    @Req() req
+    @Req() req,
+    @Query("s") search
   ) {
+    if (search) {
+      return this.trackService.searchTracks(search, true, req.user.id)
+    }
     return this.trackService.getAllTracks(req.user.id)
   }
 
   @Get("/:id")
-  getOneTrack(@Param("id") trackId) {
-    return this.trackService.getOneTrack(trackId)
+  getOneTrack(
+    @Param("id") trackId,
+    @Req() req) {
+    return this.trackService.getOneTrack(trackId, req.user.id)
   }
 
   @Delete("/delete")

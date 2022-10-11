@@ -8,13 +8,15 @@ import { Album } from '../models/Album'
 import { play, setCurrentTrack, setTracks, togglePlay } from '../storage/PlaylistSlice/PlaylistSlice'
 import TrackComponent from './TrackComponent'
 import UploadTrackForm from './Form/UploadTrackForm'
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons'
+import { AddIcon, DeleteIcon, LockIcon } from '@chakra-ui/icons'
 import { BiPauseCircle, BiPlayCircle } from 'react-icons/bi'
 import { TbUpload } from 'react-icons/tb'
 import ConfirmModal from './ConfirmModal'
-import { AlbumService } from '../services/AlbumService'
-import { updateUser } from '../storage/Actions/updateUser'
 import { useRouter } from 'next/router'
+import { useDeleteAlbumMutation} from '../storage/ApiSlice/AlbumsApi'
+import { useLazyGetMeQuery } from '../storage/ApiSlice/UserApi'
+import { setUser } from '../storage/UserSlice/UserSlice'
+import SearchTrackForAlbumForm from './Form/SearchTrackForAlbumForm'
 
 
 interface AlbumComponentProps {
@@ -27,27 +29,35 @@ const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
     const playlist = useAppSelector(state => state.playlist)
     const router = useRouter()
     const { isOpen: isUploadOpen, onOpen: onUploadOpen, onClose: onUploadClose } = useDisclosure()
+    const { isOpen: isSearchOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure()
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
     const dispatch = useAppDispatch()
-
+    
     const isPlaylistEqual = () => {
         return playlist.tracks.length === album.tracks.length && playlist.tracks.every(pl => album.tracks.find(al => al.id === pl.id)) 
     }
+    
+    const [getMe] = useLazyGetMeQuery()
+    const [deleteAlbum] = useDeleteAlbumMutation()
 
     const toggleAlbumPlay = () => {
         if (!album.tracks.length) return
         if (!isPlaylistEqual()) dispatch(setCurrentTrack(album.tracks[0]))
         dispatch(setTracks(album.tracks))
         dispatch(togglePlay())
+        document.title = `${album.name} is playing!`
+    }
+    
+    const closeSearch = async () => {
+        await fetchAlbum()
+        onSearchClose()
     }
 
     const deleteCurrentAlbum = async () => {
-        await AlbumService.delete(album.id)
-        dispatch(updateUser())
+        await deleteAlbum(album.id)
+        await getMe({}).then(res => dispatch(setUser(res.data)))
         router.push("/home")
     }
-
-    if (!album) return (<Spinner/>)
 
   return (
     <Flex pos="relative" w="100%" h="100%" alignItems="center" flexDir="column">
@@ -67,7 +77,7 @@ const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
                     }
                 </Center>
                 <Box>
-                    <Heading size="2xl" mb="10px">{album.name}</Heading>
+                    <Heading size="2xl" mb="10px">{album.name} {album.private && <LockIcon w="20px" color="gray.700"/>}</Heading>
                     <Heading size="md" color="gray.600">{album.author.name}</Heading>
                 </Box>          
             </Flex>
@@ -77,12 +87,12 @@ const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
             {user.info?.mainAlbum.id !== album.id && 
             <>
                 <Icon as={TbUpload} h="30px" w="30px" mr="20px" onClick={onUploadOpen}/>
-                <AddIcon h="25px" w="25px" mr="20px" onClick={onUploadOpen}/>
+                <AddIcon h="25px" w="25px" mr="20px" onClick={onSearchOpen}/>
                 <DeleteIcon h="25px" w="25px" onClick={onDeleteOpen}/>
             </>
             }
         </Flex>
-        <VStack spacing="5px" my="10px" w="95%" h="48%" overflowY="scroll">
+        <VStack spacing="5px" my="10px" w="95%" h="48%" overflowX="hidden" overflowY="scroll">
             {album.tracks.length === 0 && 
                 <Flex flexDir="column" alignItems="center">
                     <Heading size="lg" color="gray.300" mb="10px">{"This album looks empty :("}</Heading>
@@ -118,7 +128,14 @@ const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
             <ModalOverlay/>
             <ModalContent maxW="40%">
                 <ModalHeader>Upload track</ModalHeader>
-                <UploadTrackForm fetchAlbum={fetchAlbum} defaultAlbumId={album.id} onClose={onUploadClose}/>
+                <UploadTrackForm defaultAlbumOption={album.id} fetchAlbum={fetchAlbum} onClose={onUploadClose}/>
+            </ModalContent>
+        </Modal>
+        <Modal isCentered isOpen={isSearchOpen} onClose={closeSearch}>
+            <ModalOverlay/>
+            <ModalContent maxW="40%">
+                <ModalHeader>Search tracks for {album.name} album</ModalHeader>
+                <SearchTrackForAlbumForm albumId={album.id} fetchAlbum={fetchAlbum}/>
             </ModalContent>
         </Modal>
         <ConfirmModal onConfirm={deleteCurrentAlbum} isOpen={isDeleteOpen} onClose={onDeleteClose}/>

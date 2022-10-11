@@ -1,17 +1,16 @@
-import { Box, BoxProps, Flex, Icon } from '@chakra-ui/react'
+import { Box, BoxProps, Flex, Heading, Icon } from '@chakra-ui/react'
 import React, { FC, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { removeTrack } from '../storage/PlaylistSlice/PlaylistSlice'
+import { removeTrack, setCurrentTrack, togglePlay } from '../storage/PlaylistSlice/PlaylistSlice'
 import { Track } from '../models/Track'
 import { beautifyTime } from '../utils/beautifyTime'
 import TrackPhoto from './TrackPhoto'
 import TrackOptions from './TrackOptions'
 import { useRouter } from 'next/router'
-import { BiHeart } from 'react-icons/bi'
-import { AlbumService } from '../services/AlbumService'
-import { BsHeartFill } from 'react-icons/bs'
 import { FaHeart } from 'react-icons/fa'
-import { updateUser } from '../storage/Actions/updateUser'
+import { useAddTrackToAlbumMutation, useRemoveTrackFromAlbumMutation } from '../storage/ApiSlice/AlbumsApi'
+import { useLazyGetMeQuery } from '../storage/ApiSlice/UserApi'
+import { setUser } from '../storage/UserSlice/UserSlice'
 
 interface TrackComponentProps extends BoxProps {
     track: Track
@@ -22,9 +21,14 @@ interface TrackComponentProps extends BoxProps {
 }
 
 const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist = false, albumId = "", isMain = false, ...props}) => {
+    const [pauseVisible, setPauseVisible] = useState<boolean>(false)
     const dispatch = useAppDispatch()
     const router = useRouter()
     const user = useAppSelector(state => state.user)
+    const playlist = useAppSelector(state => state.playlist)
+    const [addTrackToAblum] = useAddTrackToAlbumMutation()
+    const [removeTrackFromAlbum] = useRemoveTrackFromAlbumMutation()
+    const [getMe] = useLazyGetMeQuery()
 
     const isInMainAlbum = (trackId) => {
       return user.info.mainAlbum.tracks.some(albumT => albumT.id === trackId)
@@ -46,13 +50,17 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
 
     const toggleTrackLike = async () => {
       if (!isInMainAlbum(track.id)) {
-        await AlbumService.addTrack(track.id, user.info.mainAlbum.id)
+        await addTrackToAblum({
+          trackId: track.id, 
+          albumId: user.info.mainAlbum.id
+        })
       } else {
-        await AlbumService.removeTrack(track.id, user.info.mainAlbum.id)
+        await removeTrackFromAlbum({
+          trackId: track.id, 
+          albumId: user.info.mainAlbum.id
+        })
       }
-      if (albumId !== user.info.mainAlbum.id) {
-        dispatch(updateUser())
-      }
+      await getMe({}).then(res => dispatch(setUser(res.data)))
       setIsLiked(prev => !prev)
     }
 
@@ -64,21 +72,48 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
         display="flex"
         alignItems="center"
         justifyContent="space-between"
+        zIndex={0}
+        pos="relative"
         {...props}>
-            <Flex alignItems="center">
-              <TrackPhoto track={track} headphones handlePlay={handlePlay}/>
-              <Icon w="30px" h="30px" as={FaHeart} ml="15px"
-                transitionDuration="0.25s"
-                color={isLiked ? "orange" : ""}
-                onClick={toggleTrackLike}
-              />
-            </Flex>
-            <Box>
-                {beautifyTime(track?.duration)}
-                {fromPlaylist && <TrackOptions options={playlistTrackOptions}/>}
-                {albumId && <TrackOptions options={albumTrackOptions}/>}
+          <Box h="100%" w="100%" pos="absolute" zIndex={0}
+            onMouseOver={() => setPauseVisible(true)}
+            onMouseOut={() => setPauseVisible(false)}
+            onClick={() => {
+              if (handlePlay) handlePlay()
+              if (playlist.currentTrack?.id === track.id) dispatch(togglePlay())
+              else dispatch(setCurrentTrack(track))
+            }}
+          >
+          </Box>
+          <Flex alignItems="center">
+            <TrackPhoto zIndex={-1} 
+              track={track} headphones 
+              paused={!playlist.isPlaying || (playlist.currentTrack.id !== track.id)}
+              pauseVisible={pauseVisible}/>
+            <Box zIndex={1}>
+              <Heading size="sm">
+                  {track.name}
+              </Heading>
+              <Heading size="xs">
+                  {track.uploader?.name}
+              </Heading>
             </Box>
-            
+            <Icon w="25px" h="25px" as={FaHeart} zIndex={1} ml="25px"
+              transitionDuration="0.25s"
+              color={isLiked ? "orange" : ""}
+              onClick={toggleTrackLike}
+              _hover={{transform: "scale(1.1)"}}
+            />
+          </Flex>
+          <Flex alignItems="center">
+              <Box>
+                {beautifyTime(track?.duration)}
+              </Box>
+              <Box ml="10px">
+                {albumId && <TrackOptions options={albumTrackOptions}/>}
+                {fromPlaylist && <TrackOptions options={playlistTrackOptions}/>}
+              </Box>
+          </Flex>
     </Box>
   )
 }

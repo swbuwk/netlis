@@ -1,40 +1,33 @@
-import { Box, Center, chakra, ChakraProps, Flex, Heading, Icon, Image } from '@chakra-ui/react'
-import { isValidMotionProp, motion } from 'framer-motion'
+import { Box, Center, ChakraProps, Flex, Heading, Icon, Image } from '@chakra-ui/react'
 import React, { FC } from 'react'
 import { FaHeadphonesAlt, FaItunesNote } from 'react-icons/fa'
 import { staticFile } from '../axios'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { Track } from '../models/Track'
+import { ChakraBox } from '../pages/_app'
 import { setCurrentTrack, togglePlay } from '../storage/PlaylistSlice/PlaylistSlice'
 import PauseComponent from './PauseComponent'
 
-const ChakraBox = chakra(motion.div, {
-  shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
-});
-
 interface TrackPhotoProps extends ChakraProps {
     track: Track
-    handlePlay?: () => void
+    paused: boolean
+    preview?: boolean
     headphones?: boolean
-    titleSize?: string
-    authorSize?: string
+    pauseVisible: boolean
 }
 
-const TrackPhoto:FC<TrackPhotoProps> = ({track, handlePlay, headphones = false, titleSize = "sm", authorSize = "xs", ...props}) => {
+const TrackPhoto:FC<TrackPhotoProps> = ({track, headphones = false, paused, preview = false, pauseVisible, ...props}) => {
   const playlist = useAppSelector(state => state.playlist)
-  const dispatch = useAppDispatch()
 
   return (
     <Flex>
-      
-      <Center onClick={() => {
-        if (handlePlay) handlePlay()
-        if (playlist.currentTrack?.id === track.id) dispatch(togglePlay())
-        else dispatch(setCurrentTrack(track))
-        }}
+      <Center 
         borderRadius="5px" pos="relative" w="45px" h="45px" mr="15px" bgColor={"#393e47"} {...props}>
-        <PauseComponent paused={!playlist.isPlaying || playlist.currentTrack.id !== track.id}/>
-        {playlist.currentTrack?.id === track.id && <Box 
+        <PauseComponent 
+          paused={paused} 
+          pauseVisible={pauseVisible}
+          />
+        {(playlist.currentTrack?.id === track.id || preview && playlist.currentPreview?.id === track.id) && <Box 
             pos="absolute"
             w="100%" h="100%"
             borderRadius="5px"
@@ -68,14 +61,6 @@ const TrackPhoto:FC<TrackPhotoProps> = ({track, handlePlay, headphones = false, 
             <Icon w="50%" h="50%" as={FaItunesNote}/>
         }
       </Center>
-      <Box>
-        <Heading size={titleSize}>
-            {track.name}
-        </Heading>
-        <Heading size={authorSize}>
-            {track.uploader?.name}
-        </Heading>
-      </Box>
     </Flex>
   )
 }

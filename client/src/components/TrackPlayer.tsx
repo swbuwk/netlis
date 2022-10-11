@@ -1,23 +1,22 @@
-import { Box, Center, chakra, Flex, Heading, HStack, Icon, Image, Progress, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text, useSlider, VStack } from '@chakra-ui/react'
-import React, { FC, LegacyRef, SyntheticEvent, useEffect, useRef, useState } from 'react'
-import { FaItunesNote} from "react-icons/fa"
+import { Box, Flex, Heading, HStack, Icon, Progress, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from '@chakra-ui/react'
+import React, { FC, useEffect, useRef, useState } from 'react'
 import {AiFillPlayCircle, AiFillPauseCircle, AiFillStepBackward, AiFillStepForward} from "react-icons/ai"
 import { BsFillVolumeMuteFill, BsFillVolumeUpFill, BsShuffle } from "react-icons/bs"
 import { TbRepeat, TbRepeatOnce } from "react-icons/tb"
-import { isValidMotionProp, motion, Variants } from 'framer-motion'
+import { Variants } from 'framer-motion'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { autoNextTrack, lock, nextTrack, pause, play, prevTrack, RepeatingVariants, setDuration, setTime, setVolume, togglePlay, toggleRepeating, toggleShuffle, unlock } from '../storage/PlaylistSlice/PlaylistSlice'
+import { autoNextTrack, lock, nextTrack, pause, play, prevTrack, RepeatingVariants, setDuration, togglePlay, toggleRepeating, toggleShuffle, unlock } from '../storage/PlaylistSlice/PlaylistSlice'
 import { staticFile } from '../axios'
 import { beautifyTime } from '../utils/beautifyTime'
 import TrackPhoto from './TrackPhoto'
-
-const ChakraBox = chakra(motion.div, {
-    shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
-  });
+import { ChakraBox } from '../pages/_app'
 
 const TrackPlayer:FC = () => {
     const audio = useRef<HTMLAudioElement>()
     const playlist = useAppSelector(state => state.playlist)
+    const [time, setTime] = useState<number>(+localStorage.getItem("time"))
+    const [volume, setVolume] = useState<number>(0.5)
+    const [pauseVisible, setPauseVisible] = useState<boolean>(false)
 
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
@@ -31,21 +30,21 @@ const TrackPlayer:FC = () => {
                 break
             }
             case "ArrowUp": {
-                dispatch(setVolume(Math.min(1, audio.current.volume + 0.05)))
+                setVolume(Math.min(1, audio.current.volume + 0.05))
                 break
             }
             case "ArrowDown": {
-                dispatch(setVolume(Math.max(0, audio.current.volume - 0.05)))
+                setVolume(Math.max(0, audio.current.volume - 0.05))
                 break
             }
-            case " ": {
-                dispatch(togglePlay())
-            }
+            // case " ": {
+            //     dispatch(togglePlay())
+            // }
           }
         }
     
         document.addEventListener('keydown', handleKeyDown)
-        audio.current.currentTime = playlist.time
+        audio.current.currentTime = time
         if (playlist.currentTrack) dispatch(lock())
     
         return () => {
@@ -64,8 +63,9 @@ const TrackPlayer:FC = () => {
         }
     }
 
-    const changeTime = (time) => {
-        dispatch(setTime(time))
+    const changeTime = (time: number) => {
+        setTime(time)
+        localStorage.setItem("time", time.toString())
         audio.current.currentTime = time
     }
 
@@ -87,8 +87,8 @@ const TrackPlayer:FC = () => {
     }, [playlist.currentTrack])
 
     useEffect(() => {
-        audio.current.volume = playlist.volume
-    }, [playlist.volume])
+        audio.current.volume = volume
+    }, [volume])
 
   return (
     <ChakraBox
@@ -101,11 +101,29 @@ const TrackPlayer:FC = () => {
         p="10px"
         display="flex"
         alignItems="center"
-        justifyContent="space-between">
+        justifyContent="space-between"
+        zIndex={100}>
             <Flex w="full" justifyContent="center" alignItems="center" pos="relative">
-                <Box pos="absolute" left="10px" >
-                    <TrackPhoto track={playlist.currentTrack} w="60px" h="60px" titleSize='lg' authorSize='sm'/>
-                </Box>
+                <Flex 
+                    pos="absolute" left="10px" 
+                    onMouseOver={() => setPauseVisible(true)}
+                    onMouseOut={() => setPauseVisible(false)}
+                >
+                    <TrackPhoto 
+                        track={playlist.currentTrack}
+                        w="60px" h="60px"
+                        paused={!playlist.isPlaying}
+                        pauseVisible={pauseVisible}
+                        />
+                    <Box>
+                        <Heading size="md">
+                            {playlist.currentTrack.name}
+                        </Heading>
+                        <Heading size="sm">
+                            {playlist.currentTrack.uploader?.name}
+                        </Heading>
+                    </Box>
+                </Flex>
                 <Flex w="50%" flexDir="column" textAlign="center" alignItems="center">
                     <Flex justifyContent="center" alignItems="center" w="100%">
                         <Icon onClick={() => dispatch(toggleShuffle())} color={playlist.isShuffled ? "orange" : ""} as={BsShuffle}/>
@@ -129,11 +147,11 @@ const TrackPlayer:FC = () => {
                         </Box>
                     </Flex>
                     <HStack w="full" alignItems="center">
-                        <Box>{beautifyTime(playlist.time)}</Box>
+                        <Box>{beautifyTime(time)}</Box>
                         {
                             audio.current?.readyState > 0
                             ?
-                            <Slider value={playlist.time} min={0} max={playlist.duration} step={0.1}
+                            <Slider value={time} min={0} max={playlist.duration} step={0.1}
                                 colorScheme='orange'
                                 focusThumbOnChange={false}
                                 onChange={e => changeTime(e)}
@@ -153,16 +171,16 @@ const TrackPlayer:FC = () => {
                 </Flex>
                 <Flex pos="absolute" right="10px">
                     {
-                        playlist.volume === 0
+                        volume === 0
                         ?
                         <Icon as={BsFillVolumeMuteFill}/>
                         :
                         <Icon as={BsFillVolumeUpFill}/>
                     }
-                    <Slider w="100px" ml="10px" value={playlist.volume} min={0} max={1} step={0.01}
+                    <Slider w="100px" ml="10px" value={volume} min={0} max={1} step={0.01}
                             colorScheme='orange'
                             focusThumbOnChange={false}
-                            onChange={e => dispatch(setVolume(e))}>
+                            onChange={e => setVolume(e)}>
                             <SliderTrack>
                                 <SliderFilledTrack />
                             </SliderTrack>
@@ -176,7 +194,10 @@ const TrackPlayer:FC = () => {
                 onCanPlay={() => {
                     dispatch(setDuration(audio.current.duration))
                 }}
-                onTimeUpdate={e => dispatch(setTime(e.currentTarget.currentTime))}
+                onTimeUpdate={e => {
+                    setTime(e.currentTarget.currentTime)
+                    localStorage.setItem("time", time.toString())
+                }}
                 onEnded={() => {
                     dispatch(pause())
                     const prevTrackId = playlist.currentTrack.id

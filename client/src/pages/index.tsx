@@ -1,16 +1,13 @@
 import React, { useEffect } from 'react'
-import { isValidMotionProp, motion, Variants } from 'framer-motion'
-import { Box, Button, Center, chakra, Heading, HStack, Icon } from '@chakra-ui/react'
+import { Variants } from 'framer-motion'
+import { Box, Button, Center, Heading, HStack, Icon } from '@chakra-ui/react'
 import { FaHeadphonesAlt } from '@react-icons/all-files/fa/FaHeadphonesAlt';
 import Link from 'next/link';
 import { useAppSelector } from '../hooks/redux';
 import { useRouter } from 'next/router';
+import { ChakraBox } from './_app';
 
 const NAME = "NETLIS"
-
-const ChakraBox = chakra(motion.div, {
-    shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
-  });
 
 const index = () => {
     const user = useAppSelector(state => state.user)

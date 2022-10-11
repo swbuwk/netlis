@@ -2,14 +2,10 @@ import { Box, Button, Center, chakra, Container, Heading, Icon, keyframes, trans
 import { FaHeadphonesAlt } from '@react-icons/all-files/fa/FaHeadphonesAlt'
 import { BiRightArrowAlt } from '@react-icons/all-files/bi/BiRightArrowAlt'
 import { BiLeftArrowAlt } from '@react-icons/all-files/bi/BiLeftArrowAlt'
-import { isValidMotionProp, motion } from 'framer-motion'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import SigninForm from '../../components/Form/SigninForm'
 import SignupForm from '../../components/Form/SignupForm'
-
-const ChakraBox = chakra(motion.div, {
-  shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
-});
+import { ChakraBox } from '../_app'
 
 const index = () => {
   const [animationKeyframes, setAnimationKeyframes] = useState("initial")

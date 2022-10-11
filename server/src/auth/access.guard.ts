@@ -15,6 +15,7 @@ export class RolesGuard implements CanActivate {
         const authHeader = req.headers.authorization
         const token = authHeader.split(" ")[1]
 
+
         let user
         
         try {
@@ -22,6 +23,8 @@ export class RolesGuard implements CanActivate {
         } catch {
           return false
         }
+
+
 
         const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
             context.getHandler(),
@@ -34,6 +37,7 @@ export class RolesGuard implements CanActivate {
           req.user = user
           return user.roles.some((role) => requiredRoles.includes(role.name));
     } catch (error) {
+      console.log(error)
         throw new HttpException("Don't have permisiion to this endpoint", HttpStatus.UNAUTHORIZED)
     }
   }

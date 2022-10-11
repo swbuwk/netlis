@@ -14,7 +14,7 @@ const index = () => {
           :
           <Heading size="lg" mt="5%">Current playlist</Heading>
         }
-        <VStack spacing="5px" my="40px" w="95%" overflowY="scroll">
+        <VStack spacing="5px" my="40px" w="95%" overflowX="hidden" overflowY="scroll">
           {playlist.tracks.map(track => (
             <TrackComponent key={track.id} fromPlaylist track={track}/>
           ))}

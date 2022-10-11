@@ -3,12 +3,11 @@ import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik'
 import React, { FC } from 'react'
 import * as yup from 'yup';
-import api from '../../axios';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { Album } from '../../models/Album';
+import { useAppDispatch } from '../../hooks/redux';
 import { ServerException } from '../../models/ServerException';
-import { AlbumService } from '../../services/AlbumService';
-import { updateUser } from '../../storage/Actions/updateUser';
+import { useCreateAlbumMutation } from '../../storage/ApiSlice/AlbumsApi';
+import { useLazyGetMeQuery } from '../../storage/ApiSlice/UserApi';
+import { setUser } from '../../storage/UserSlice/UserSlice';
 import FileField, { FileFieldOptions } from './Field/FileField';
 import InputField from './Field/InputField';
 import SwitchField from './Field/SwitchField';
@@ -19,21 +18,29 @@ interface CreateAlbumFormProps {
 }
 
 const CreateAlbumForm: FC<CreateAlbumFormProps> = ({onClose}) => {
-  const user = useAppSelector(state => state.user)
   const dispatch = useAppDispatch()
   const toast = useToast()
 
-  const createAlbum = async (body) => {
-      await AlbumService.create(body)
-      .then(res => {
+  const [createAlbum] = useCreateAlbumMutation()
+  const [getMe] = useLazyGetMeQuery()
+
+  const toggleAlbumCreate = async (body) => {
+      const formData = new FormData()
+      formData.append("name", body.name)
+      formData.append("description", body.description)
+      formData.append("private", ""+body.private)
+      formData.append("photo", body.photo)
+      await createAlbum(formData)
+      .then(() => {
         toast({
           title: 'Album succesfully updated.',
           status: 'success',
           duration: 4000,
           isClosable: true,
         })
-      dispatch(updateUser())
       })
+      .then(() => getMe({}))
+      .then(res => dispatch(setUser(res.data)))
       .catch((err: AxiosError<ServerException>) => {
         toast({
           title: err.response.data.message,
@@ -69,7 +76,7 @@ const CreateAlbumForm: FC<CreateAlbumFormProps> = ({onClose}) => {
             actions.setFieldError("photo", "Photo is too big (max 5MB).")
             return
         }
-        await createAlbum(values)
+        await toggleAlbumCreate(values)
     }
   }
   >

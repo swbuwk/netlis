@@ -1,42 +1,44 @@
-import { Box, Center, Flex, Heading, Slider, SliderFilledTrack, SliderThumb, SliderTrack, VStack } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
+import { Center, Flex, Heading, Spinner, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'
 import api from '../../axios'
 import TrackComponent from '../../components/TrackComponent';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { useAppDispatch } from '../../hooks/redux';
 import { Track } from '../../models/Track';
-import { pause, setTracks } from '../../storage/PlaylistSlice/PlaylistSlice';
+import { useLazyGetTracksQuery } from '../../storage/ApiSlice/TracksApi';
+import { setTracks } from '../../storage/PlaylistSlice/PlaylistSlice';
 
 
 const index = () => {
-  const [serverTracks, setServerTracks] = useState<Track[] | null>()
-  const user = useAppSelector(state => state.user)
-  const router = useRouter()
   const dispatch = useAppDispatch()
 
+  const [getServerTracks, {data: serverTracks, isLoading , isSuccess}] = useLazyGetTracksQuery()
+
   useEffect(() => {
-    if (user.info === undefined) return
-    if (user.info === null && !user.signedIn) router.push("/authorization")
-    api.get<Track[]>("tracks").then((res) => {
-      setServerTracks(res.data)
-    });
-  }, [user])
+    getServerTracks({}).then(r => console.log(serverTracks))
+  }, [])
 
   return <Flex h="100%" w="100%" flexDir="column" alignItems="center" >
-    <Heading size="2xl" mt="5%">Recent tracks</Heading>
-    <Center my="40px" w="100%">
-      <VStack spacing={"5px"} my="20px" w="95%" overflowY="scroll">
-        {
-        serverTracks?.length
+    <Heading size="2xl" mt="10vh">Recent tracks</Heading>
+    <Flex justifyContent="center" alignItems="center" my="40px" w="100%" h="60vh">
+      {
+        isLoading
         ?
-        serverTracks?.map(track => (
-          <TrackComponent key={track.id} handlePlay={() => dispatch(setTracks(serverTracks))} track={track}/>
-        ))
+        <Spinner/>
         :
-        <Heading>Empty :(</Heading>
+        <VStack spacing={"5px"} my="20px" w="95%" h="100%" overflowX="hidden" overflowY="scroll">
+          {
+            serverTracks?.length
+            ?
+            serverTracks?.map(track => (
+              <TrackComponent key={track.id} handlePlay={() => dispatch(setTracks(serverTracks))} track={track}/>
+            ))
+            :
+            isSuccess && <Heading>Empty :(</Heading>
+          }
+        </VStack>
       }
-      </VStack>
-    </Center>
+      
+    </Flex>
   </Flex>
 }
 

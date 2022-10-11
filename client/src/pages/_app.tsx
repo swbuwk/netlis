@@ -1,27 +1,38 @@
-import { Box, ChakraProvider } from '@chakra-ui/react'
+import { Box, chakra, ChakraProvider, Spinner } from '@chakra-ui/react'
 import theme from '../theme'
 import { AppProps } from 'next/app'
-import { clearPlaylist, RepeatingVariants, setPlaylist} from '../storage/PlaylistSlice/PlaylistSlice'
+import { RepeatingVariants, setPlaylist} from '../storage/PlaylistSlice/PlaylistSlice'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { wrapper } from '../storage'
 import { useEffect } from 'react'
 import TrackPlayer from '../components/TrackPlayer'
 import Navbar from '../components/Navbar'
-import { setUser, signOut } from '../storage/UserSlice/UserSlice'
-import { updateUser } from '../storage/Actions/updateUser'
+import { setUser, signIn, signOut } from '../storage/UserSlice/UserSlice'
 import UserOptions from '../components/UserOptions'
-import { SpinnerIcon } from '@chakra-ui/icons'
 import { RouteGuard } from '../components/RouteGuard'
+import { isValidMotionProp, motion } from 'framer-motion'
+import { useGetMeQuery, useLazyGetMeQuery } from '../storage/ApiSlice/UserApi'
+
+export const ChakraBox = chakra(motion.div, {
+  shouldForwardProp: (prop) => isValidMotionProp(prop) || prop === 'children',
+});
 
 function MyApp({ Component, pageProps: {session, ...pageProps}, router }: AppProps) {
   const playlist = useAppSelector((state) => state.playlist)
   const user = useAppSelector((state) => state.user)
-
+  const [getMe, {isLoading, isSuccess, isError}] = useLazyGetMeQuery()
   const dispatch = useAppDispatch()
 
   const fetchData = async () => {
     try {
-      await dispatch(updateUser())
+      await getMe({})
+      .then(res => {
+        dispatch(signIn(res.data))
+      })
+      .catch(err => {
+        dispatch(signOut())
+        router.push("/")
+      })
 
       const tracks = JSON.parse(localStorage.getItem("tracks"))
       const options = JSON.parse(localStorage.getItem("options"))
@@ -30,6 +41,7 @@ function MyApp({ Component, pageProps: {session, ...pageProps}, router }: AppPro
       const volume = JSON.parse(localStorage.getItem("volume"))
       const playlist = {
         currentTrack,
+        currentPreview: null,
         default: tracks,
         tracks,
         duration: 0,
@@ -58,22 +70,34 @@ function MyApp({ Component, pageProps: {session, ...pageProps}, router }: AppPro
       overflow: "hidden"
     }}>
         <ChakraProvider theme={theme}>
-          <Box display="flex" flexDir="column" pos="relative" w="100vw" h="100vh">
-            <Box display="flex" w="100%" h="90%">
+          <Box display="flex" flexDir="column" pos="relative" w="100vw" h="100vh"
+          __css={{
+            '*::-webkit-scrollbar': {
+              width: '10px',
+            },
+            '*::-webkit-scrollbar-track': {
+              width: '10px',
+            },
+            '*::-webkit-scrollbar-thumb': {
+              backgroundColor: "orange",
+              borderRadius: '8px',
+            },
+          }}>
+            <Box display="flex" w="100%" h="88%" overflow="hidden">
               {user.signedIn && <Navbar/>}
               <RouteGuard>
                 <Component {...pageProps}/>
               </RouteGuard>
             </Box>
             {
-              playlist.currentTrack
+              playlist.currentTrack && user.signedIn
               ?
               <TrackPlayer/>
               :
-              <Box h="10%" w="100%" bgColor="#262f42"/>
+              <Box h="12%" w="100%" bgColor="#262f42"/>
             }
-            </Box>
-            {user.signedIn && <UserOptions/>}
+          </Box>
+          {user.signedIn && <UserOptions/>}
         </ChakraProvider>
     </Box>
   )

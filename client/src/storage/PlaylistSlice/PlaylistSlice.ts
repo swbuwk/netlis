@@ -15,10 +15,9 @@ interface PlaylistState {
   default: Track[]
   tracks: Track[],
   currentTrack: Track | null,
-  volume: number,
+  currentPreview: Track | null,
   isPlaying: boolean,
   isShuffled,
-  time: number,
   duration: number,
   locked: boolean
   repeating: RepeatingVariants
@@ -28,10 +27,9 @@ const initialState: PlaylistState = {
   default: [],
   tracks: [],
   currentTrack: null,
-  volume: 0.5,
+  currentPreview: null,
   isPlaying: false,
   isShuffled: false,
-  time: 0,
   duration: 0,
   locked: false,
   repeating: RepeatingVariants.NONE
@@ -48,8 +46,6 @@ export const counterSlice = createSlice({
       state.isShuffled = action.payload.isShuffled || initialState.isPlaying
       state.repeating = action.payload.repeating || initialState.repeating
       state.tracks = action.payload.tracks || initialState.tracks
-      state.volume = action.payload.volume || initialState.volume
-      state.time = action.payload.time || initialState.time
     },
     clearPlaylist(state) {
       state.isPlaying = false
@@ -61,9 +57,7 @@ export const counterSlice = createSlice({
       localStorage.removeItem("options")
       state.tracks =  initialState.tracks
       localStorage.removeItem("tracks")
-      state.volume = initialState.volume
       localStorage.removeItem("volume")
-      state.time = initialState.time
       localStorage.removeItem("audio_time")
     },
     addTracks(state, action) {
@@ -93,6 +87,9 @@ export const counterSlice = createSlice({
     setCurrentTrack(state, action) {
         state.currentTrack = action.payload
         localStorage.setItem("current_track", JSON.stringify(state.currentTrack))
+    },
+    setCurrentPreview(state, action) {
+      state.currentPreview = action.payload
     },
     lock(state) {
       state.locked = true
@@ -147,14 +144,6 @@ export const counterSlice = createSlice({
       }
       localStorage.setItem("options", JSON.stringify({repeating: state.repeating, shuffle: state.isShuffled}))
     },
-    setVolume(state, action) {
-      state.volume = action.payload
-      localStorage.setItem("volume", JSON.stringify(state.volume))
-    },
-    setTime(state, action) {
-      state.time = action.payload
-      localStorage.setItem("audio_time", JSON.stringify(state.time))
-    },
     setDuration(state, action) {
       state.duration = action.payload
     }
@@ -166,6 +155,7 @@ export const {
               addTracks,
               removeTrack,
               setCurrentTrack,
+              setCurrentPreview,
               play,
               pause,
               prevTrack,
@@ -173,14 +163,12 @@ export const {
               toggleRepeating,
               autoNextTrack,
               toggleShuffle,
-              setVolume, 
               setPlaylist,
               clearPlaylist,
               togglePlay,
               setTracks,
               lock,
               unlock,
-              setTime,
               setDuration
              } = counterSlice.actions
 

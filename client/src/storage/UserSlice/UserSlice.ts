@@ -1,26 +1,26 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { User } from '../../models/User'
 import cookieCutter from 'cookie-cutter'
-import { updateUser } from '../Actions/updateUser'
-import { boolean } from 'yup'
-import { Album } from '../../models/Album'
 
 interface UserState {
   info: User | null | undefined,
   signedIn: boolean,
-  loading: boolean
 }
 
 const initialState: UserState = {
   info: undefined,
   signedIn: false,
-  loading: true
+
 }
 
 export const counterSlice = createSlice({
   name: 'playlist',
   initialState,
   reducers: {
+    signIn(state, action) {
+        state.info = action.payload
+        if (action.payload) state.signedIn = true
+    },
     setUser(state, action) {
         state.info = action.payload
     },
@@ -30,24 +30,9 @@ export const counterSlice = createSlice({
         cookieCutter.set("refresh_token", "")
         localStorage.removeItem("access_token")
     }
-  },
-  extraReducers(builder) {
-    builder.addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
-      state.info = action.payload
-      state.signedIn = true
-      state.loading = false
-    })
-    builder.addCase(updateUser.pending, (state) => {
-      state.loading = true
-    })
-    builder.addCase(updateUser.rejected, (state) => {
-      state.info = initialState.info
-      state.signedIn = initialState.signedIn
-      state.loading = initialState.loading
-    })
-  },
+  }
 })
 
-export const { setUser, signOut } = counterSlice.actions
+export const { setUser, signOut, signIn } = counterSlice.actions
 
 export default counterSlice.reducer

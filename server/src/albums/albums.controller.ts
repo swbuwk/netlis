@@ -23,8 +23,12 @@ export class AlbumsController {
     @Get()
     getAllAlbums(
         @Req() req,
-        @Query("user_id") userId 
+        @Query("user_id") userId,
+        @Query("s") search,
     ) {
+        if (search) {
+            return this.albumsService.searchByName(search, req.user.id)
+        }
         if (userId) {
             return this.albumsService.getUserAlbums(userId, req.user.id)
         }
@@ -76,10 +80,5 @@ export class AlbumsController {
         @Query("track_id") trackId,
         ) {
         return this.albumsService.deleteTrackFromAlbum(albumId, trackId, req.user.id)
-    }
-
-    @Get("/tracks")
-    getAlbumTracks(@Param("id") id) {
-        return this.albumsService.getAlbumTracks(id)
     }
 }

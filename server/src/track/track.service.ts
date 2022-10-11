@@ -61,14 +61,14 @@ export class TrackService {
             verified,
         }, {include: {all: true}})
         await this.albumTrackRepository.create({albumId: dto.originalAlbumId, trackId: id})
-        return await this.getOneTrack(id)
+        return await this.getOneTrack(id, user.id)
     }
 
-    async uploadTrackPhoto(trackId, image, userId) {
+    async uploadTrackPhoto(trackId: string, image, userId: string): Promise<Track> {
         if (!image) {
             throw new HttpException("Error while uploading photo", HttpStatus.BAD_REQUEST)
         }
-        const track = await this.getOneTrack(trackId)
+        const track = await this.getOneTrack(trackId, userId)
         if (track.uploaderId !== userId) {
             throw new HttpException("You cannot edit this track", HttpStatus.BAD_REQUEST)
         }
@@ -78,8 +78,8 @@ export class TrackService {
         return track
     }
 
-    async updateTrackInfo(trackId, dto: UpdateTrackDto, userId) {
-        const track = await this.getOneTrack(trackId)
+    async updateTrackInfo(trackId: string, dto: UpdateTrackDto, userId: string): Promise<Track> {
+        const track = await this.getOneTrack(trackId, userId)
         if (track.uploaderId !== userId) {
             throw new HttpException("You cannot edit this track", HttpStatus.BAD_REQUEST)
         }
@@ -89,7 +89,7 @@ export class TrackService {
         return track
     }
 
-    async addCommentToTrack(dto: CreateCommentDto, trackId: string, authorId: string) {
+    async addCommentToTrack(dto: CreateCommentDto, trackId: string, authorId: string): Promise<Comment> {
         const comment = await this.commentRepository.create({
             ...dto,
             trackId,
@@ -98,12 +98,12 @@ export class TrackService {
         return comment
     }
     
-    async getTrackComments(trackId: string) {
+    async getTrackComments(trackId: string): Promise<Comment[]> {
         const comments = await this.commentRepository.findAll({where: {trackId}})
         return comments
     }
 
-    async getAllTracks(userId) {
+    async getAllTracks(userId: string): Promise<Track[]> {
         const tracks = await this.trackRepositoy.findAll({include: [
             {
                 model: Album,
@@ -121,14 +121,12 @@ export class TrackService {
                 model: User,
                 attributes: {exclude: ["password", "email"]},
             }
-        ]})
+        ], order: [["createdAt", "DESC"]]})
         return tracks
     }
 
-
-
-    async getOneTrack(id: string) {
-        let track = await this.trackRepositoy.findByPk(id, {include: [
+    async getOneTrack(id: string, userId: string): Promise<Track> {
+        const track = await this.trackRepositoy.findByPk(id, {include: [
             {
                 model: Album,
                 as: "albums",
@@ -143,11 +141,57 @@ export class TrackService {
                 attributes: {exclude: ["password"]}
             }
         ], attributes: {exclude: ["uploaderId", "albumId"]}})
+        const trackOriginalAlbum = await this.albumsRepository.findByPk(track.originalAlbumId)
+        if (trackOriginalAlbum.private && trackOriginalAlbum.authorId !== userId) throw new ServerException({
+            message: "This track was uploaded on private album",
+            ok: false,
+            status: HttpStatus.BAD_REQUEST,
+            type: "track"
+        })
         return track
     }
 
-    async deleteTrack(id: string, userId: string) {
-        const track = await this.getOneTrack(id)
+    async searchTracks(search: string, byName: boolean, userId: string): Promise<Track[]> {
+        search = "%"+search+"%"
+        const tracks = await this.trackRepositoy.findAll(
+            {
+                where: byName && {name: {[Op.iLike]: search}},
+                include: [
+                    {
+                        model: Album,
+                        where: {
+                            [Op.or]: {
+                                private: false,
+                                [Op.and]: {
+                                    private: true,
+                                    authorId: userId
+                                }
+                            }
+                        },
+                    },
+                    {
+                        model: Album,
+                        as: "albums",
+                        attributes: {exclude: ["authorId"]}
+                    },
+                    {
+                        model: Comment,
+                        attributes: {exclude: ["authorId", "trackId"]}
+                    },
+                    {
+                        model: User,
+                        as: "uploader",
+                        where: !byName && {name: {[Op.iLike]: search}},
+                        attributes: {exclude: ["password"]}
+                    }
+                ], attributes: {exclude: ["uploaderId", "albumId"]},
+                order: [["createdAt", "DESC"]]
+            })
+        return tracks
+    }
+
+    async deleteTrack(id: string, userId: string): Promise<{deleted: number}> {
+        const track = await this.getOneTrack(id, userId)
         if (track.uploaderId !== userId) {
             throw new HttpException("You cannot delete this track", HttpStatus.BAD_REQUEST)
         }
