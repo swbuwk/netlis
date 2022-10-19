@@ -131,7 +131,7 @@ const index = () => {
                       animate="visible"
                       variants={letterVariants}
                       >
-                        <Heading fontSize={"9xl"}>{char}</Heading>
+                        <Heading fontSize={"9xl"} color="white">{char}</Heading>
                   </ChakraBox>
                 ))}
           </HStack>

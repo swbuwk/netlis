@@ -15,6 +15,13 @@ export interface Track {
     uploader: User;
     originalAlbumId: string;
     albums: Album[];
-    comments: any[];
+    comments: Comment[];
     duration: number
+}
+
+export interface Comment {
+    id: number;
+    text: string
+    author: User
+    track: Track
 }

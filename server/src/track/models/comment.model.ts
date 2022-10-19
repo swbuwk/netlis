@@ -24,6 +24,9 @@ export class Comment extends Model<Comment, CommentCreationAttrs> {
   @Column
   authorId: string
 
+  @BelongsTo(() => User)
+  author: User
+
   @Column({type: DataType.STRING})
   text: string
 }

@@ -21,7 +21,7 @@ import SearchTrackForAlbumForm from './Form/SearchTrackForAlbumForm'
 
 interface AlbumComponentProps {
     album: Album
-    fetchAlbum: () => void
+    fetchAlbum: () => Promise<void>
 }
 
 const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
@@ -135,7 +135,7 @@ const AlbumComponent:FC<AlbumComponentProps> = ({album, fetchAlbum}) => {
             <ModalOverlay/>
             <ModalContent maxW="40%">
                 <ModalHeader>Search tracks for {album.name} album</ModalHeader>
-                <SearchTrackForAlbumForm albumId={album.id} fetchAlbum={fetchAlbum}/>
+                <SearchTrackForAlbumForm albumId={album.id}/>
             </ModalContent>
         </Modal>
         <ConfirmModal onConfirm={deleteCurrentAlbum} isOpen={isDeleteOpen} onClose={onDeleteClose}/>

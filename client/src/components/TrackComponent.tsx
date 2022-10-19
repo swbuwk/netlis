@@ -26,7 +26,7 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
     const router = useRouter()
     const user = useAppSelector(state => state.user)
     const playlist = useAppSelector(state => state.playlist)
-    const [addTrackToAblum] = useAddTrackToAlbumMutation()
+    const [addTrackToAlbum] = useAddTrackToAlbumMutation()
     const [removeTrackFromAlbum] = useRemoveTrackFromAlbumMutation()
     const [getMe] = useLazyGetMeQuery()
 
@@ -49,8 +49,8 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
 
 
     const toggleTrackLike = async () => {
-      if (!isInMainAlbum(track.id)) {
-        await addTrackToAblum({
+      if (!isLiked) {
+        await addTrackToAlbum({
           trackId: track.id, 
           albumId: user.info.mainAlbum.id
         })
@@ -91,7 +91,7 @@ const TrackComponent:FC<TrackComponentProps> = ({track, handlePlay, fromPlaylist
               paused={!playlist.isPlaying || (playlist.currentTrack.id !== track.id)}
               pauseVisible={pauseVisible}/>
             <Box zIndex={1}>
-              <Heading size="sm">
+              <Heading as="a" size="sm" cursor="pointer" onClick={() => router.push(`/tracks/${track.id}`)}>
                   {track.name}
               </Heading>
               <Heading size="xs">

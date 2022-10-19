@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik'
 import React, { FC } from 'react'
 import * as yup from 'yup';
+import imageCompression from 'browser-image-compression';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { ServerException } from '../../models/ServerException';
 import { useLazyGetMeQuery, useUpdateUserMutation, useUploadUserPhotoMutation } from '../../storage/ApiSlice/UserApi';
@@ -64,7 +65,7 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
       name: "",
       bio: "",
       address: "",
-      photo: {} as Blob,
+      photo: {} as File,
      }}
     validationSchema={UpdateUserSchema}
     onSubmit={async (values, actions) => {
@@ -73,8 +74,11 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
         return
       }
       const {photo, ...body} = values
+      const compresedPhoto = await imageCompression(photo, {
+        maxSizeMB: 0.5
+      })
       const formData = new FormData()
-      formData.append("photo", photo)
+      formData.append("photo", compresedPhoto)
       await update(body, formData)
     }
   }

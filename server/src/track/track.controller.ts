@@ -54,7 +54,17 @@ export class TrackController {
 
   @Get("/comments")
   getTrackComments(@Query("track_id") trackId) {
+    console.log(trackId)
     return this.trackService.getTrackComments(trackId)
+  }
+
+  
+  @Delete("/comments")
+  deleteCommentFromTrack(
+    @Query("comment_id") commentId,
+    @Req() req
+  ) {
+    return this.trackService.deleteCommentFromTrack(commentId, req.user.id)
   }
 
   @Get()

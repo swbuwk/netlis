@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Heading, Input, useToast, VStack } from '@chakra-ui/react'
 import { Form, Formik } from 'formik'
 import React, { FC, useRef } from 'react'
-import api from '../../axios'
+import imageCompression from 'browser-image-compression';
 import { useAppSelector } from '../../hooks/redux'
 import { Album } from '../../models/Album'
 import InputField from './Field/InputField'
@@ -9,7 +9,7 @@ import SelectField from './Field/SelectField'
 import InputTextArea from './Field/TextAreaField'
 import * as yup from 'yup';
 import FileField, { FileFieldOptions } from './Field/FileField'
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import { Track } from '../../models/Track'
 import { ServerException } from '../../models/ServerException'
 import { useUploadTrackMutation } from '../../storage/ApiSlice/TracksApi'
@@ -42,7 +42,7 @@ const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, fetchAlbum, defaultA
         fetchAlbum()
         onClose()
       })
-      .catch((err) => {
+      .catch((err: AxiosError<ServerException>) => {
         setErrors({
           audio: err.response.data.type === "audio" ? err.response.data.message : ""
         })
@@ -67,7 +67,7 @@ const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, fetchAlbum, defaultA
             name: "",
             text: "",
             album: "",
-            photo: {} as Blob,
+            photo: {} as File,
             audio: {} as AudioBlob
         }}
         validationSchema={UploadTrackSchema}
@@ -80,6 +80,9 @@ const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, fetchAlbum, defaultA
               actions.setFieldError("audio", "Audio is too big (max 5MB).")
               return
             }
+            const compresedPhoto = await imageCompression(values.photo, {
+              maxSizeMB: 0.5
+            })
             const formData = new FormData()
             formData.append("name", values.name)
             formData.append("text", values.text)

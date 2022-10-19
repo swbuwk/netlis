@@ -1,7 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import axiosBaseQuery from '.'
 import { API_URL } from '../../axios'
-import { Track } from '../../models/Track'
+import { Comment, Track } from '../../models/Track'
 
 export const tracksApi = createApi({
   reducerPath: 'tracksApi',
@@ -66,6 +66,25 @@ export const tracksApi = createApi({
             }
         }),
     }),
+    addComment: build.mutation<Comment, {trackId: string, text: string}>({
+        query: ({trackId, text}) => ({
+            url: "/tracks/comments",
+            method: "POST",
+            data: {text},
+            params: {
+                track_id: trackId
+            }
+        })
+    }),
+    getComments: build.query<Comment[], {trackId: string}>({
+        query: ({trackId}) => ({
+            url: "/tracks/comments",
+            method: "GET",
+            params: {
+                track_id: trackId
+            }
+        })
+    }),
   }),
 })
 
@@ -73,10 +92,13 @@ export const tracksApi = createApi({
 export const { 
     useLazyGetTracksQuery,
     useLazyGetOneTrackQuery,
+    useGetOneTrackQuery,
     useLazySearchTracksQuery,
     useSearchTracksQuery,
     useUploadTrackMutation,
     useUpdateTrackMutation,
     useUploadTrackPhotoMutation,
-    useDeleteTrackMutation
+    useDeleteTrackMutation,
+    useAddCommentMutation,
+    useLazyGetCommentsQuery
 } = tracksApi

@@ -99,8 +99,22 @@ export class TrackService {
     }
     
     async getTrackComments(trackId: string): Promise<Comment[]> {
-        const comments = await this.commentRepository.findAll({where: {trackId}})
+        const comments = await this.commentRepository.findAll({where: {trackId}, include: [
+            {
+                model: User
+            }
+        ]})
         return comments
+    }
+
+    async deleteCommentFromTrack(commentId: string, requestedUserId: string) {
+        const comment = await this.commentRepository.findByPk(commentId)
+        const track = await this.trackRepositoy.findByPk(comment.trackId)
+        if (requestedUserId !== comment.authorId && track.uploaderId !== requestedUserId) {
+            throw new HttpException("You cannot delete this comment", HttpStatus.BAD_REQUEST)
+        }
+        const deleted: number = await this.commentRepository.destroy({where: {id: commentId}})
+        return {deleted}
     }
 
     async getAllTracks(userId: string): Promise<Track[]> {
@@ -141,6 +155,7 @@ export class TrackService {
                 attributes: {exclude: ["password"]}
             }
         ], attributes: {exclude: ["uploaderId", "albumId"]}})
+        console.log(track)
         const trackOriginalAlbum = await this.albumsRepository.findByPk(track.originalAlbumId)
         if (trackOriginalAlbum.private && trackOriginalAlbum.authorId !== userId) throw new ServerException({
             message: "This track was uploaded on private album",
@@ -195,7 +210,7 @@ export class TrackService {
         if (track.uploaderId !== userId) {
             throw new HttpException("You cannot delete this track", HttpStatus.BAD_REQUEST)
         }
-        let deleted: number = await this.trackRepositoy.destroy({where: {id}})
+        const deleted: number = await this.trackRepositoy.destroy({where: {id}})
         return {deleted}
     }
 

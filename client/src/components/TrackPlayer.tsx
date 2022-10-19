@@ -114,6 +114,7 @@ const TrackPlayer:FC = () => {
                         w="60px" h="60px"
                         paused={!playlist.isPlaying}
                         pauseVisible={pauseVisible}
+                        onClick={() => dispatch(togglePlay())}
                         />
                     <Box>
                         <Heading size="md">

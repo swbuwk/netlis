@@ -74,11 +74,6 @@ export class AlbumsService {
             {
                 model: Track,
                 attributes: {exclude: [ "AlbumTrack"]},
-                include: [
-                    {
-                        model: User
-                    }
-                ]
             },
             {
                 model: User,
@@ -142,12 +137,11 @@ export class AlbumsService {
         const album = await this.albumsRepository.findByPk(albumId, {include: [
             {
                 model: Track,
-                attributes: {exclude: [ "AlbumTrack"]},
                 include: [
                     {
                         model: User,
                         attributes: {exclude: ["password"]}
-                    }
+                    },
                 ],
             },
             {

@@ -1,5 +1,5 @@
 import { Box, Center, ChakraProps, Flex, Heading, Icon, Image } from '@chakra-ui/react'
-import React, { FC } from 'react'
+import React, { FC, ReactEventHandler } from 'react'
 import { FaHeadphonesAlt, FaItunesNote } from 'react-icons/fa'
 import { staticFile } from '../axios'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
@@ -13,7 +13,8 @@ interface TrackPhotoProps extends ChakraProps {
     paused: boolean
     preview?: boolean
     headphones?: boolean
-    pauseVisible: boolean
+    pauseVisible: boolean,
+    onClick?: () => void;
 }
 
 const TrackPhoto:FC<TrackPhotoProps> = ({track, headphones = false, paused, preview = false, pauseVisible, ...props}) => {

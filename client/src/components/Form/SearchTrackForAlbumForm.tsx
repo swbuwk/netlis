@@ -6,10 +6,9 @@ import TrackPreview from '../TrackPreview'
 
 interface SearchTrackForAlbumFormProps {
   albumId: string
-  fetchAlbum: () => void
 }
 
-const SearchTrackForAlbumForm:FC<SearchTrackForAlbumFormProps>  = ({albumId, fetchAlbum}) => {
+const SearchTrackForAlbumForm:FC<SearchTrackForAlbumFormProps>  = ({albumId}) => {
   const [search, setSearch] = useState<string>("")
   const debouncedSearch: string = useDebounce(search, 500)
   const audio = useRef<HTMLAudioElement>()

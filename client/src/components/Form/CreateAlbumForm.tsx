@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Heading, useToast, VStack } from '@chakra-ui/react';
 import { AxiosError } from 'axios';
+import imageCompression from 'browser-image-compression';
 import { Form, Formik } from 'formik'
 import React, { FC } from 'react'
 import * as yup from 'yup';
@@ -25,11 +26,14 @@ const CreateAlbumForm: FC<CreateAlbumFormProps> = ({onClose}) => {
   const [getMe] = useLazyGetMeQuery()
 
   const toggleAlbumCreate = async (body) => {
+      const compresedPhoto = await imageCompression(body.photo, {
+        maxSizeMB: 0.5
+      })
       const formData = new FormData()
       formData.append("name", body.name)
       formData.append("description", body.description)
       formData.append("private", ""+body.private)
-      formData.append("photo", body.photo)
+      formData.append("photo", compresedPhoto)
       await createAlbum(formData)
       .then(() => {
         toast({
