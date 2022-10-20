@@ -74,11 +74,11 @@ const UpdateUserForm: FC<UpdateUserFormProps> = ({onClose}) => {
         return
       }
       const {photo, ...body} = values
-      const compresedPhoto = await imageCompression(photo, {
+      const compresedPhoto = values.photo.size && (await imageCompression(values.photo, {
         maxSizeMB: 0.5
-      })
+      }))
       const formData = new FormData()
-      formData.append("photo", compresedPhoto)
+      if (compresedPhoto) formData.append("photo", compresedPhoto)
       await update(body, formData)
     }
   }

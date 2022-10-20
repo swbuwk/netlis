@@ -80,14 +80,15 @@ const UploadTrackForm:FC<UploadTrackFormProps> = ({onClose, fetchAlbum, defaultA
               actions.setFieldError("audio", "Audio is too big (max 5MB).")
               return
             }
-            const compresedPhoto = await imageCompression(values.photo, {
+            const compresedPhoto = values.photo.size && (await imageCompression(values.photo, {
               maxSizeMB: 0.5
-            })
+            }))
+            console.log(compresedPhoto)
             const formData = new FormData()
             formData.append("name", values.name)
             formData.append("text", values.text)
             formData.append("originalAlbumId", values.album)
-            formData.append("photo", values.photo)
+            formData.append("photo", compresedPhoto)
             formData.append("audio", values.audio)
             formData.append("duration", ""+values.audio.duration)
    

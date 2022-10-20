@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesGuard } from 'src/auth/access.guard';
@@ -41,7 +41,7 @@ export class AlbumsController {
         return this.albumsService.getOneAlbumWithPrivateControl(albumId, req.user.id)
     }
 
-    @Post("/update")
+    @Patch()
     updateAlbumInfo(@Query("album_id") albumId,
             @Req() req,
             @Body() dto: CreateAlbumDto) {

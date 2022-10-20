@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { TrackService } from './track.service';
 import { RolesGuard } from 'src/auth/access.guard';
@@ -35,7 +35,7 @@ export class TrackController {
     return this.trackService.uploadTrackPhoto(trackId, photo, req.user)
   }
 
-  @Post("/update")
+  @Patch()
   @UseInterceptors(FileInterceptor("photo"))
   updateTrackInfo(
         @Query("track_id") trackId,
@@ -54,10 +54,17 @@ export class TrackController {
 
   @Get("/comments")
   getTrackComments(@Query("track_id") trackId) {
-    console.log(trackId)
     return this.trackService.getTrackComments(trackId)
   }
 
+  @Patch("/comments")
+  updateTrackComment(
+    @Body() dto: CreateCommentDto,
+    @Query("comment_id") commentId,
+    @Req() req
+  ) {
+    return this.trackService.updateTrackComment(dto ,commentId, req.user.id)
+  }
   
   @Delete("/comments")
   deleteCommentFromTrack(

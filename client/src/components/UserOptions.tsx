@@ -1,6 +1,7 @@
 import { Avatar, Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Modal, ModalContent, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import React, { FC } from 'react'
+import { FaUser } from 'react-icons/fa'
 import { staticFile } from '../axios'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { useDeleteUserMutation } from '../storage/ApiSlice/UserApi'
@@ -38,8 +39,8 @@ const UserOptions: FC = () => {
         top="10px"
         right="10px"
         >
-          <Flex alignItems="center" >
-          <Avatar src={staticFile(user.info?.photo)} pos="relative" left="-10px" zIndex={10}/>
+          <Flex alignItems="center">
+          <Avatar src={staticFile(user.info?.photo)} icon={<FaUser style={{transform: "translateY(5px)"}} size="2em"/>} bgColor="gray.300" pos="relative" left="-10px" zIndex={10}/>
             <Menu>
                 <MenuButton
                     as={Button}

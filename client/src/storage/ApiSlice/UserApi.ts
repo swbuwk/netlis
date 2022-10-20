@@ -7,25 +7,25 @@ import { User } from '../../models/User'
 export const userApi = createApi({
   reducerPath: 'userApi',
   baseQuery: axiosBaseQuery({ 
-    baseUrl: API_URL,
+    baseUrl: API_URL+"/users",
 }),
 
   endpoints: (build) => ({
     getMe: build.query<User, {}>({
         query: () => ({
-            url: "/users/me",
+            url: "/me",
             method: "GET"
         }),
     }),
     getUsers: build.query<User[], {}>({
         query: () => ({
-            url: "/users",
+            url: "",
             method: "GET"
         }),
     }),
     getOneUser: build.query<User, {}>({
         query: (user_id) => ({
-            url: "/users",
+            url: "",
             method: "GET",
             params: {
                 user_id
@@ -38,21 +38,21 @@ export const userApi = createApi({
         address: string
     }>({
         query: (data) => ({
-            url: `/users/update`,
-            method: "POST",
+            url: ``,
+            method: "PATCH",
             data
         }),
     }),
     uploadUserPhoto: build.mutation<User, FormData>({
         query: (photo) => ({
-            url: "/users/photo",
+            url: "/photo",
             method: "POST",
             data: photo,
         }),
     }),
     deleteUser: build.mutation<unknown, string>({
         query: (user_id) => ({
-            url: "/usets",
+            url: "",
             method: "DELETE",
             params: {
                 user_id

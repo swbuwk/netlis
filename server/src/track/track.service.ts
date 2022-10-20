@@ -56,6 +56,7 @@ export class TrackService {
             id,
             ...dto,
             audio,
+            private: album.private,
             photo,
             uploaderId: user.id,
             verified,
@@ -103,8 +104,19 @@ export class TrackService {
             {
                 model: User
             }
-        ]})
+        ], order: [["createdAt", "DESC"]]})
         return comments
+    }
+
+    async updateTrackComment(dto: CreateCommentDto, commentId: string, requestedUserId: string) {
+        const comment = await this.commentRepository.findByPk(commentId)
+        const track = await this.trackRepositoy.findByPk(comment.trackId)
+        if (requestedUserId !== comment.authorId && track.uploaderId !== requestedUserId) {
+            throw new HttpException("You cannot update this comment", HttpStatus.BAD_REQUEST)
+        }
+        comment.text = dto.text
+        await comment.save()
+        return comment
     }
 
     async deleteCommentFromTrack(commentId: string, requestedUserId: string) {
@@ -120,22 +132,20 @@ export class TrackService {
     async getAllTracks(userId: string): Promise<Track[]> {
         const tracks = await this.trackRepositoy.findAll({include: [
             {
-                model: Album,
-                where: {
-                    [Op.or]: {
-                        private: false,
-                        [Op.and]: {
-                            private: true,
-                            authorId: userId
-                        }
-                    }
-                },
-            },
-            {
                 model: User,
                 attributes: {exclude: ["password", "email"]},
             }
-        ], order: [["createdAt", "DESC"]]})
+        ],
+        where: {
+            [Op.or]: {
+                private: false,
+                [Op.and]: {
+                    private: true,
+                    uploaderId: userId
+                }
+            }
+        },
+        order: [["createdAt", "DESC"]]})
         return tracks
     }
 
@@ -155,7 +165,6 @@ export class TrackService {
                 attributes: {exclude: ["password"]}
             }
         ], attributes: {exclude: ["uploaderId", "albumId"]}})
-        console.log(track)
         const trackOriginalAlbum = await this.albumsRepository.findByPk(track.originalAlbumId)
         if (trackOriginalAlbum.private && trackOriginalAlbum.authorId !== userId) throw new ServerException({
             message: "This track was uploaded on private album",

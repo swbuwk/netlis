@@ -6,24 +6,24 @@ import { Comment, Track } from '../../models/Track'
 export const tracksApi = createApi({
   reducerPath: 'tracksApi',
   baseQuery: axiosBaseQuery({ 
-    baseUrl: API_URL,
+    baseUrl: API_URL+"/tracks",
 }),
   endpoints: (build) => ({
     getTracks: build.query<Track[], {}>({
         query: () => ({
-            url: "/tracks",
+            url: "",
             method: "GET"
         }),
     }),
     getOneTrack: build.query<Track, string>({
         query: (id) => ({
-            url: `/tracks/${id}`,
+            url: `/${id}`,
             method: "GET"
         }),
     }),
     searchTracks: build.query<Track[], string>({
         query: (search) => ({
-            url: `/tracks`,
+            url: "",
             method: "GET",
             params: {
                 s: search
@@ -32,15 +32,15 @@ export const tracksApi = createApi({
     }),
     uploadTrack: build.mutation<Track, FormData>({
         query: (data) => ({
-            url: "/tracks/upload",
+            url: "/upload",
             method: "POST",
             data,
         }), 
     }),
     updateTrack: build.mutation<Track, {name: string, text: string, trackId: string}>({
         query: (data) => ({
-            url: "/tracks/update",
-            method: "POST",
+            url: "",
+            method: "PATCH",
             data,
             params: {
                 track_id: data.trackId
@@ -49,7 +49,7 @@ export const tracksApi = createApi({
     }),
     uploadTrackPhoto: build.mutation<Track, {photo: FormData, trackId: string}>({
         query: (data) => ({
-            url: "/tracks/photo",
+            url: "/photo",
             method: "POST",
             data: data.photo,
             params: {
@@ -59,7 +59,7 @@ export const tracksApi = createApi({
     }),
     deleteTrack: build.mutation<unknown, string>({
         query: (track_id) => ({
-            url: `/tracks`,
+            url: ``,
             method: "DELETE",
             params: {
                 track_id
@@ -68,7 +68,7 @@ export const tracksApi = createApi({
     }),
     addComment: build.mutation<Comment, {trackId: string, text: string}>({
         query: ({trackId, text}) => ({
-            url: "/tracks/comments",
+            url: "/comments",
             method: "POST",
             data: {text},
             params: {
@@ -78,10 +78,29 @@ export const tracksApi = createApi({
     }),
     getComments: build.query<Comment[], {trackId: string}>({
         query: ({trackId}) => ({
-            url: "/tracks/comments",
+            url: "/comments",
             method: "GET",
             params: {
                 track_id: trackId
+            }
+        })
+    }),
+    updateComment: build.mutation<Comment, {commentId: string, text: string}>({
+        query: ({commentId, text}) => ({
+            url: "/comments",
+            method: "PATCH",
+            data: {text},
+            params: {
+                comment_id: commentId
+            }
+        })
+    }),
+    deleteComment: build.mutation<Comment, {commentId: string}>({
+        query: ({commentId}) => ({
+            url: "/comments",
+            method: "DELETE",
+            params: {
+                comment_id: commentId
             }
         })
     }),
@@ -100,5 +119,7 @@ export const {
     useUploadTrackPhotoMutation,
     useDeleteTrackMutation,
     useAddCommentMutation,
-    useLazyGetCommentsQuery
+    useLazyGetCommentsQuery,
+    useUpdateCommentMutation,
+    useDeleteCommentMutation
 } = tracksApi

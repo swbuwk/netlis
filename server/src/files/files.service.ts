@@ -5,14 +5,14 @@ import * as uuid from "uuid"
 
 @Injectable()
 export class FilesService {
-    async uploadImage(file: Buffer) {
+    async uploadImage(file: Express.Multer.File) {
         const imgName = uuid.v4() + ".jpg"
         const imgPath = path.resolve(__dirname, "..", "static")
         await this.uploadFile(imgPath, imgName, file.buffer)
         return imgName
     }
 
-    async uploadAudio(file: Buffer) {
+    async uploadAudio(file: Express.Multer.File) {
         const audioName = uuid.v4() + "mp3"
         const audioPath = path.resolve(__dirname, "..", "static")
         await this.uploadFile(audioPath, audioName, file.buffer)

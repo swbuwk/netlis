@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from '../roles/roles.decorator';
 import { RolesGuard } from '../auth/access.guard';
@@ -32,7 +32,7 @@ export class UsersController {
 
     @Roles("USER", "ADMIN")
     @UseGuards(RolesGuard)
-    @Post("/update")
+    @Patch()
     @UseInterceptors(FileInterceptor("photo"))
     updateUserInfo(@Req() req,
                     @Body() dto: UpdateUserDto) {

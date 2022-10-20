@@ -1,12 +1,12 @@
-import { Box, Button, Center, Flex, Heading, Icon, Image, Spinner, Text, Textarea } from '@chakra-ui/react'
+import { Box, Center, Flex, Heading, Icon, Image, Spinner } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { BsChevronCompactDown } from 'react-icons/bs'
 import { FaHeart, FaItunesNote, FaPause, FaPlay } from 'react-icons/fa'
 import { staticFile } from '../../axios'
+import CommentComponent from '../../components/CommentComponent'
 import CommentForm from '../../components/Form/CommentForm'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
-import { queryError } from '../../storage/ApiSlice'
 import { useAddTrackToAlbumMutation, useRemoveTrackFromAlbumMutation } from '../../storage/ApiSlice/AlbumsApi'
 import { useGetOneTrackQuery, useLazyGetCommentsQuery } from '../../storage/ApiSlice/TracksApi'
 import { useLazyGetMeQuery } from '../../storage/ApiSlice/UserApi'
@@ -134,15 +134,7 @@ const TrackPage = () => {
             <Box my="30px" w="90%" h="1px" bgColor="gray.600"/>
             {        
                 comments && comments.map(comment => (
-                    <Flex w="100%" bgColor="gray.700" p="15px" my="5px" borderRadius="5px">
-                        <Flex>
-                            <Image src={staticFile(comment.author.photo)} minW="50px" w="50px" h="50px"/>
-                            <Box mx="10px">
-                                <Heading size="md">{comment.author.name}</Heading>
-                                <Text wordBreak="break-all">{comment.text}</Text>
-                            </Box>
-                        </Flex>
-                    </Flex>
+                    <CommentComponent key={comment.id} comment={comment} refetchComments={refetchComments}/>
                 ))
             }
         </Flex>

@@ -2,11 +2,9 @@ import { Button, Flex } from '@chakra-ui/react'
 import {  Form, Formik } from 'formik'
 import * as yup from 'yup';
 import React, { FC } from 'react'
-import { useAppDispatch } from '../../hooks/redux';
 import TextAreaField from './Field/TextAreaField';
 import { useAddCommentMutation } from '../../storage/ApiSlice/TracksApi';
-import { ServerException } from '../../models/ServerException';
-import { AxiosError } from 'axios';
+
 
 interface AddCommentFormProps {
     trackId: string
@@ -33,8 +31,10 @@ const AddCommentForm:FC<AddCommentFormProps> = ({onSubmit = () => {}, trackId}) 
             text: "",
            }}
           validationSchema={CommentSchema}
-          onSubmit={async (values) => {
+          onSubmit={async (values, actions) => {
             await addCommentToTrack(values.text)
+            actions.setTouched({text: false})
+            actions.setValues({text: ""})
           }
         }
         >

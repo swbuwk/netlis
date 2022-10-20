@@ -12,6 +12,7 @@ interface TrackCreationAttrs {
     text: string,
     photo: string,
     audio: string,
+    private: boolean,
     verified: boolean,
     duration: string
 }
@@ -42,6 +43,9 @@ export class Track extends Model<Track, TrackCreationAttrs> {
 
   @Column({type: DataType.BOOLEAN, defaultValue: false})
   verified: boolean
+
+  @Column({type: DataType.BOOLEAN, defaultValue: false})
+  private: boolean
 
   @ForeignKey(() => User)
   @Column

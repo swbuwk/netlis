@@ -25,15 +25,7 @@ const CreateAlbumForm: FC<CreateAlbumFormProps> = ({onClose}) => {
   const [createAlbum] = useCreateAlbumMutation()
   const [getMe] = useLazyGetMeQuery()
 
-  const toggleAlbumCreate = async (body) => {
-      const compresedPhoto = await imageCompression(body.photo, {
-        maxSizeMB: 0.5
-      })
-      const formData = new FormData()
-      formData.append("name", body.name)
-      formData.append("description", body.description)
-      formData.append("private", ""+body.private)
-      formData.append("photo", compresedPhoto)
+  const toggleAlbumCreate = async (formData) => {
       await createAlbum(formData)
       .then(() => {
         toast({
@@ -72,7 +64,7 @@ const CreateAlbumForm: FC<CreateAlbumFormProps> = ({onClose}) => {
       name: "",
       description: "",
       private: false,
-      photo: {} as Blob
+      photo: {} as File
      }}
     validationSchema={CreateAlbumSchema}
     onSubmit={async (values, actions) => {
@@ -80,6 +72,14 @@ const CreateAlbumForm: FC<CreateAlbumFormProps> = ({onClose}) => {
             actions.setFieldError("photo", "Photo is too big (max 5MB).")
             return
         }
+        const compresedPhoto = values.photo.size && (await imageCompression(values.photo, {
+          maxSizeMB: 0.5
+        }))
+        const formData = new FormData()
+        formData.append("name", values.name)
+        formData.append("description", values.description)
+        formData.append("private", ""+values.private)
+        formData.append("photo", compresedPhoto)
         await toggleAlbumCreate(values)
     }
   }

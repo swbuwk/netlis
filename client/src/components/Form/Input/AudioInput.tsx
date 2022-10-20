@@ -14,15 +14,16 @@ const AudioInput:FC<AudioInputProps> = ({setValue}) => {
         setFileInfo(e.currentTarget.files[0])
     }
 
-    function setFileInfo(file) {
+    const setFileInfo = async (file) => {
         const audio = document.createElement('audio');
         audio.preload = 'metadata';
         audio.src = URL.createObjectURL(inputRef.current.files[0]);
       
         audio.onloadedmetadata = function() {
-          window.URL.revokeObjectURL(audio.src);
-          file.duration = audio.duration
-          setValue(file)
+
+            window.URL.revokeObjectURL(audio.src);
+            file.duration = audio.duration
+            setValue(file)
         }
       }
 
